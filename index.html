@@ -45,8 +45,8 @@
                 <form id="form-proyecto" class="form-comunidad">
                     <div class="form-group">
                         <input type="text" id="autor" placeholder="Inicia sesión para publicar" readonly required>
-                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema (ej: Gun System)" required>
-                        <input type="password" id="clave-eliminar" placeholder="Clave para editar en el futuro" required>
+                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema" required>
+                        <input type="password" id="clave-eliminar" placeholder="Clave para editar" required>
                     </div>
                     <div id="lista-archivos-previa" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
                     <div class="add-script-box" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px dashed #334155;">
@@ -59,7 +59,7 @@
                             </select>
                         </div>
                         <textarea id="temp-codigo" placeholder="Pega tu código Lua aquí..." rows="5" style="width:100%; margin-top:10px;"></textarea>
-                        <button type="button" id="btn-agregar-archivo" class="btn-secundario" style="width:100%; margin-top:10px;">+ Añadir este archivo a la carpeta</button>
+                        <button type="button" id="btn-agregar-archivo" class="btn-secundario" style="width:100%; margin-top:10px;">+ Añadir este archivo</button>
                     </div>
                     <button type="submit" id="btn-publicar-todo" class="btn-main" style="display:none; width: 100%; margin-top:15px; background: var(--accent); color: #000;">🚀 Publicar Sistema Completo</button>
                 </form>
@@ -83,7 +83,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc, increment, arrayUnion, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
@@ -91,8 +91,7 @@
           projectId: "robloxcommunity-bb652",
           storageBucket: "robloxcommunity-bb652.firebasestorage.app",
           messagingSenderId: "114286923700",
-          appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1",
-          measurementId: "G-8Z8WTR62VL"
+          appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -115,9 +114,17 @@
         userDisplay.onclick = async () => {
             if (autorLogueado === "Invitado") {
                 try {
-// ... luego en la función de login:
-await signInWithRedirect(auth, provider);
-                } catch (e) { alert("Error al conectar con Google"); }
+                    // Intento 1: Popup (más rápido)
+                    await signInWithPopup(auth, provider);
+                } catch (e) {
+                    console.log("Popup bloqueado o error, intentando redirect...", e);
+                    try {
+                        // Intento 2: Redirección (funciona siempre)
+                        await signInWithRedirect(auth, provider);
+                    } catch (err) {
+                        alert("Error definitivo: " + err.message);
+                    }
+                }
             }
         };
 
@@ -135,7 +142,6 @@ await signInWithRedirect(auth, provider);
                 userDisplay.innerHTML = "👤 Iniciar Sesión";
                 btnLogout.style.display = "none";
                 inputAutor.value = "";
-                document.getElementById('lista-notificaciones').innerHTML = "Inicia sesión para ver notificaciones.";
             }
         });
 
@@ -180,17 +186,12 @@ await signInWithRedirect(auth, provider);
             panel.style.display = panel.style.display === "none" ? "block" : "none";
         };
 
-        document.addEventListener('click', () => {
-            document.getElementById('panel-notificaciones').style.display = "none";
-        });
-
         // --- LÓGICA DE SCRIPTS ---
         document.getElementById('btn-agregar-archivo').onclick = () => {
             const n = document.getElementById('temp-nombre').value;
             const t = document.getElementById('temp-tipo').value;
             const c = document.getElementById('temp-codigo').value;
             if (!n || !c) return alert("Nombre y Código obligatorios");
-            
             archivosTemporales.push({ nombre: n, tipo: t, codigo: c });
             document.getElementById('temp-nombre').value = "";
             document.getElementById('temp-codigo').value = "";
@@ -200,7 +201,7 @@ await signInWithRedirect(auth, provider);
         function actualizarPrevia() {
             const cont = document.getElementById('lista-archivos-previa');
             cont.innerHTML = archivosTemporales.map((f, i) => `
-                <span style="background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold;">
+                <span style="background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin:2px;">
                     ${f.nombre}.lua <span onclick="window.borrarTemp(${i})" style="cursor:pointer; margin-left:5px;">×</span>
                 </span>`).join('');
             document.getElementById('btn-publicar-todo').style.display = archivosTemporales.length > 0 ? "block" : "none";
@@ -211,11 +212,8 @@ await signInWithRedirect(auth, provider);
         document.getElementById('form-proyecto').onsubmit = async (e) => {
             e.preventDefault();
             if (autorLogueado === "Invitado") return alert("Inicia sesión primero");
-            
             const btn = document.getElementById('btn-publicar-todo');
             btn.disabled = true;
-            btn.innerText = "Subiendo...";
-
             await addDoc(scriptsRef, {
                 autor: autorLogueado,
                 nombreSistema: document.getElementById('nombre-sistema').value,
@@ -225,17 +223,14 @@ await signInWithRedirect(auth, provider);
                 comentarios: [],
                 fecha: Date.now()
             });
-
             archivosTemporales = [];
             actualizarPrevia();
             e.target.reset();
             inputAutor.value = autorLogueado;
             btn.disabled = false;
-            btn.innerText = "🚀 Publicar Sistema Completo";
-            alert("¡Publicado con éxito!");
+            alert("¡Publicado!");
         };
 
-        // --- RENDERIZADO (Biblioteca) ---
         onSnapshot(query(scriptsRef, orderBy("fecha", "desc")), (snap) => {
             todosLosProyectos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderizar(todosLosProyectos);
@@ -246,86 +241,30 @@ await signInWithRedirect(auth, provider);
             cont.innerHTML = proyectos.map(p => {
                 const id = p.id;
                 const files = p.archivos.map((f, i) => `
-                    <div style="background:#0f172a; margin-bottom:5px; border-radius:4px; overflow:hidden; border:1px solid #1e293b;">
+                    <div style="background:#0f172a; margin-bottom:5px; border-radius:4px; border:1px solid #1e293b;">
                         <div onclick="window.toggleCode('${id}-${i}')" style="padding:8px 12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
                             <span>📄 <strong>${f.tipo}</strong> ${f.nombre}</span>
-                            <button class="copy-btn" onclick="event.stopPropagation(); window.copy('${id}-${i}')">Copiar</button>
+                            <button onclick="event.stopPropagation(); window.copy('${id}-${i}')" style="background:var(--accent); border:none; border-radius:3px; padding:2px 6px; font-size:0.6rem; cursor:pointer;">Copiar</button>
                         </div>
                         <pre id="code-${id}-${i}" style="display:none; margin:0; font-size:0.75rem;"><code class="language-lua">${f.codigo}</code></pre>
-                    </div>
-                `).join('');
-
-                return `
-                <div class="folder-block" style="background:var(--bg-card); border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #334155;">
-                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:15px;">
-                        <div>
-                            <h3 style="color:var(--accent); margin:0;">📂 ${p.nombreSistema}</h3>
-                            <small style="opacity:0.6;">Por ${p.autor}</small>
-                        </div>
-                        <button onclick="window.darLike('${id}')" style="background:none; border:1px solid #334155; color:white; padding:5px 10px; border-radius:20px; cursor:pointer;">❤️ ${p.likes || 0}</button>
-                    </div>
-                    <div>${files}</div>
-                    <div style="margin-top:15px; display:flex; gap:10px;">
-                        <input type="text" id="comm-${id}" placeholder="Escribe un comentario..." style="flex:1; background:#0f172a; border:1px solid #334155; color:white; padding:5px 10px; border-radius:4px; font-size:0.8rem;">
-                        <button onclick="window.postComm('${id}')" class="btn-main" style="padding:5px 15px; font-size:0.8rem;">Post</button>
-                    </div>
+                    </div>`).join('');
+                return `<div class="folder-block" style="background:#1e293b; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #334155;">
+                    <h3 style="color:var(--accent); margin:0;">📂 ${p.nombreSistema}</h3>
+                    <small>Por ${p.autor}</small>
+                    <div style="margin-top:10px;">${files}</div>
                 </div>`;
             }).join('');
             if(window.Prism) Prism.highlightAll();
         }
 
-        // --- FUNCIONES GLOBALES ---
         window.toggleCode = (id) => {
             const el = document.getElementById(`code-${id}`);
             el.style.display = el.style.display === "none" ? "block" : "none";
         };
-
         window.copy = (id) => {
-            const text = document.getElementById(`code-${id}`).innerText;
-            navigator.clipboard.writeText(text);
-            alert("Código copiado");
-        };
-
-        window.darLike = async (id) => {
-            if (autorLogueado === "Invitado") return alert("Logueate");
-            if (localStorage.getItem('L_'+id)) return alert("Ya diste like");
-            const d = doc(db, "scripts", id);
-            await updateDoc(d, { likes: increment(1) });
-            localStorage.setItem('L_'+id, true);
-            const snap = await getDoc(d);
-            enviarNotif(snap.data().autor, `❤️ ${autorLogueado} dio like a tu sistema ${snap.data().nombreSistema}`);
-        };
-
-        window.postComm = async (id) => {
-            if (autorLogueado === "Invitado") return alert("Logueate");
-            const inp = document.getElementById(`comm-${id}`);
-            if(!inp.value) return;
-            const d = doc(db, "scripts", id);
-            await updateDoc(d, { comentarios: arrayUnion({ user: autorLogueado, text: inp.value, date: Date.now() }) });
-            const snap = await getDoc(d);
-            enviarNotif(snap.data().autor, `💬 ${autorLogueado} comentó en ${snap.data().nombreSistema}`);
-            inp.value = "";
-        };
-
-        async function enviarNotif(para, texto) {
-            if (para === autorLogueado) return;
-            await addDoc(notifRef, { para, texto, leida: false, fecha: Date.now() });
-        }
-
-        document.getElementById('buscador').oninput = (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = todosLosProyectos.filter(p => 
-                p.nombreSistema.toLowerCase().includes(val) || 
-                p.autor.toLowerCase().includes(val)
-            );
-            renderizar(filtered);
+            navigator.clipboard.writeText(document.getElementById(`code-${id}`).innerText);
+            alert("Copiado");
         };
     </script>
 </body>
 </html>
-
-
-
-
-
-
