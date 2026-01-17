@@ -98,6 +98,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+// Añade estas líneas justo debajo para asegurar compatibilidad
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
 
         const scriptsRef = collection(db, "scripts");
         const notifRef = collection(db, "notificaciones");
@@ -321,3 +325,4 @@
     </script>
 </body>
 </html>
+
