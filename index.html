@@ -98,10 +98,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-// Añade estas líneas justo debajo para asegurar compatibilidad
-provider.setCustomParameters({
-  prompt: 'select_account'
-});
 
         const scriptsRef = collection(db, "scripts");
         const notifRef = collection(db, "notificaciones");
@@ -118,7 +114,9 @@ provider.setCustomParameters({
         userDisplay.onclick = async () => {
             if (autorLogueado === "Invitado") {
                 try {
-                    await signInWithPopup(auth, provider);
+                    import { signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// ... luego en la función de login:
+await signInWithRedirect(auth, provider);
                 } catch (e) { alert("Error al conectar con Google"); }
             }
         };
@@ -325,4 +323,5 @@ provider.setCustomParameters({
     </script>
 </body>
 </html>
+
 
