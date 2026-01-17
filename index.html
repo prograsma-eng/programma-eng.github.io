@@ -114,7 +114,6 @@
         userDisplay.onclick = async () => {
             if (autorLogueado === "Invitado") {
                 try {
-                    import { signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // ... luego en la función de login:
 await signInWithRedirect(auth, provider);
                 } catch (e) { alert("Error al conectar con Google"); }
@@ -323,5 +322,6 @@ await signInWithRedirect(auth, provider);
     </script>
 </body>
 </html>
+
 
 
