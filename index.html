@@ -86,12 +86,15 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
-            authDomain: "robloxcommunity-bb652.firebaseapp.com",
-            projectId: "robloxcommunity-bb652",
-            storageBucket: "robloxcommunity-bb652.firebasestorage.app",
-            messagingSenderId: "114286923700",
-            appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1"
+ const firebaseConfig = {
+  apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
+  authDomain: "robloxcommunity-bb652.firebaseapp.com",
+  projectId: "robloxcommunity-bb652",
+  storageBucket: "robloxcommunity-bb652.firebasestorage.app",
+  messagingSenderId: "114286923700",
+  appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1",
+  measurementId: "G-8Z8WTR62VL"
+};
         };
 
         const app = initializeApp(firebaseConfig);
@@ -322,6 +325,7 @@ await signInWithRedirect(auth, provider);
     </script>
 </body>
 </html>
+
 
 
 
