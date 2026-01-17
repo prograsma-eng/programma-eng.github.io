@@ -1,41 +1,104 @@
-body {
-    font-family: Arial, sans-serif;
+/* Configuración General */
+* {
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    box-sizing: border-box;
 }
-h1 {
-    color: #333;
-    text-align: center;
-    margin-top: 20px;
-}
-p {
-    color: #666;
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #0f172a; /* Azul muy oscuro */
+    color: #f8fafc;
     line-height: 1.6;
-    margin: 20px;
 }
-a {
-    color: #0066cc;
+
+/* Navegación */
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 5%;
+    background: rgba(15, 23, 42, 0.9);
+    position: sticky;
+    top: 0;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #38bdf8; /* Celeste neón */
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav ul li a {
+    color: white;
     text-decoration: none;
+    transition: 0.3s;
 }
-a:hover {
-    text-decoration: underline;
+
+nav ul li a:hover {
+    color: #38bdf8;
 }
-.container {
-    width: 80%;
-    margin: auto;
-    overflow: hidden;
-}
-.button {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+
+/* Hero Section */
+.hero {
     text-align: center;
-    text-decoration: none;
-    outline: none;
-    color: #fff;
-    background-color: #28a745;
+    padding: 100px 20px;
+    background: linear-gradient(rgba(15,23,42,0.7), rgba(15,23,42,0.7)), 
+                url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1000');
+    background-size: cover;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.btn-main {
+    background-color: #38bdf8;
+    color: #0f172a;
+    padding: 12px 30px;
     border: none;
     border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform 0.2s;
+}
+
+.btn-main:hover {
+    transform: scale(1.05);
+}
+
+/* Cards de Tutoriales */
+.grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 50px 5%;
+}
+
+.card {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 10px;
+    border-bottom: 4px solid #38bdf8;
+    transition: translateY 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+footer {
+    text-align: center;
+    padding: 40px;
+    background: #020617;
 }
