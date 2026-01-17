@@ -6,46 +6,329 @@
     <title>Prograsma123 | Comunidad de Devs Roblox</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo">Prograsma123</div>
-            <ul>
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#tutoriales">Tutoriales</a></li>
-                <li><a href="#comunidad">Comunidad</a></li>
-            </ul>
-        </nav>
-        <div class="hero">
-            <h1>Domina el Desarrollo en Roblox</h1>
-            <p>Aprende a crear mecánicas profesionales y sistemas avanzados para tus juegos.</p>
-            <button class="btn-main">Empezar a Aprender</button>
+    <header style="padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); position: sticky; top:0; z-index:1000;">
+        <h1 style="font-size: 1.2rem; color: var(--accent);">Prograsma123</h1>
+        
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="user-display" style="font-size: 0.8rem; color: #94a3b8;"></span>
+            <div class="notifications-wrapper" style="position: relative;">
+                <button id="btn-campana" style="background:none; border:none; font-size: 1.5rem; cursor:pointer; position: relative;">
+                    🔔 <span id="notif-count" style="display:none; position:absolute; top:0; right:0; background:red; color:white; font-size:0.6rem; border-radius:50%; padding:2px 6px; font-weight: bold;">0</span>
+                </button>
+                <div id="panel-notificaciones" style="display:none; position:absolute; right:0; top:45px; width:280px; background:#1e293b; border:1px solid var(--accent); border-radius:10px; z-index:1000; max-height:400px; overflow-y:auto; padding:15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; border-bottom:1px solid #334155; padding-bottom:5px; display: flex; justify-content: space-between; align-items: center;">
+                        Notificaciones 
+                        <button id="btn-limpiar-notifs" style="background:none; border:none; color:var(--accent); font-size: 0.7rem; cursor:pointer;">Marcar como leídas</button>
+                    </h4>
+                    <div id="lista-notificaciones" style="font-size:0.8rem; color:#94a3b8;">
+                        Cargando...
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
     <main>
         <section id="tutoriales" class="features">
-            <h2>¿Qué aprenderás aquí?</h2>
-            <div class="grid-cards">
-                <div class="card">
-                    <h3>Sistemas de DataStore</h3>
-                    <p>Guarda el progreso, monedas y skins de tus jugadores de forma segura.</p>
+            <div class="tutorial-content">
+                <h2 class="section-title" style="text-align: center;">Comunidad de Scripting</h2>
+                <div class="grid-cards">
+                    <div class="card"><div class="icon">🚀</div><h3>Sistemas</h3><p>Mecánicas listas para usar.</p></div>
+                    <div class="card"><div class="icon">⚙️</div><h3>Código Limpio</h3><p>Scripts optimizados.</p></div>
+                    <div class="card"><div class="icon">🖥️</div><h3>UI</h3><p>Interfaces modernas.</p></div>
                 </div>
-                <div class="card">
-                    <h3>Mecánicas de Combate</h3>
-                    <p>Crea sistemas de espadas, armas de fuego y habilidades especiales.</p>
+            </div>
+        </section>
+
+        <section id="publicar" class="tutorial-destacado">
+            <div class="tutorial-content">
+                <h2>Publicar Carpeta de Scripts 📂</h2>
+                <form id="form-proyecto" class="form-comunidad">
+                    <div class="form-group">
+                        <input type="text" id="autor" placeholder="Tu Nombre / User" required>
+                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema" required>
+                        <input type="password" id="clave-eliminar" placeholder="Clave para editar" required>
+                    </div>
+                    <div id="lista-archivos-previa"></div>
+                    <div class="add-script-box">
+                        <div class="form-group">
+                            <input type="text" id="temp-nombre" placeholder="Nombre del archivo">
+                            <select id="temp-tipo">
+                                <option value="Script">Script</option>
+                                <option value="LocalScript">LocalScript</option>
+                                <option value="ModuleScript">ModuleScript</option>
+                            </select>
+                        </div>
+                        <textarea id="temp-codigo" placeholder="Código Lua aquí..." rows="5"></textarea>
+                        <button type="button" id="btn-agregar-archivo" class="btn-secundario">+ Añadir Archivo</button>
+                    </div>
+                    <button type="submit" id="btn-publicar-todo" class="btn-main" style="display:none; width: 100%; margin-top:15px;">Publicar Sistema Completo</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="comunidad" class="tutorial-destacado">
+            <div class="tutorial-content">
+                <h2 style="text-align: center; margin-bottom: 30px;">Biblioteca Global</h2>
+                <div class="search-container">
+                    <input type="text" id="buscador" class="search-input" placeholder="Buscar por nombre, autor o contenido...">
+                    <span class="search-icon">🔍</span>
                 </div>
-                <div class="card">
-                    <h3>Interfaz de Usuario (UI)</h3>
-                    <p>Diseña menús interactivos y modernos que mejoren la experiencia.</p>
-                </div>
+                <div id="contenedor-scripts"></div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2026 Prograsma123 - Hecho para desarrolladores por desarrolladores.</p>
-    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-lua.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc, increment, arrayUnion, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
+            authDomain: "robloxcommunity-bb652.firebaseapp.com",
+            projectId: "robloxcommunity-bb652",
+            storageBucket: "robloxcommunity-bb652.firebasestorage.app",
+            messagingSenderId: "114286923700",
+            appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const scriptsRef = collection(db, "scripts");
+        const notifRef = collection(db, "notificaciones");
+
+        let archivosTemporales = [];
+        let todosLosProyectos = [];
+
+        // --- IDENTIFICACIÓN DE USUARIO ---
+        let autorLogueado = localStorage.getItem('user_roblox');
+        if (!autorLogueado) {
+            autorLogueado = prompt("Bienvenido. Introduce tu nombre de desarrollador:") || "Invitado";
+            localStorage.setItem('user_roblox', autorLogueado);
+        }
+        document.getElementById('user-display').innerText = `👤 ${autorLogueado}`;
+        document.getElementById('autor').value = autorLogueado;
+
+        // --- NOTIFICACIONES REAL-TIME ---
+        const qNotifs = query(notifRef, where("para", "==", autorLogueado), orderBy("fecha", "desc"));
+        onSnapshot(qNotifs, (snapshot) => {
+            const lista = document.getElementById('lista-notificaciones');
+            const count = document.getElementById('notif-count');
+            let unread = 0;
+
+            if (snapshot.empty) {
+                lista.innerHTML = "No hay notificaciones.";
+                count.style.display = "none";
+                return;
+            }
+
+            lista.innerHTML = snapshot.docs.map(d => {
+                const n = d.data();
+                if(!n.leida) unread++;
+                return `<div style="padding:10px; border-bottom:1px solid #334155; ${!n.leida ? 'background:rgba(56,189,248,0.05); border-left:2px solid var(--accent);' : ''}">
+                    ${n.texto} <br><small style="opacity:0.5">${new Date(n.fecha).toLocaleString()}</small>
+                </div>`;
+            }).join('');
+
+            count.innerText = unread;
+            count.style.display = unread > 0 ? "block" : "none";
+        });
+
+        window.limpiarNotificaciones = async () => {
+            const q = query(notifRef, where("para", "==", autorLogueado), where("leida", "==", false));
+            const querySnapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            querySnapshot.forEach((d) => {
+                batch.update(doc(db, "notificaciones", d.id), { leida: true });
+            });
+            await batch.commit();
+        };
+        document.getElementById('btn-limpiar-notifs').onclick = window.limpiarNotificaciones;
+
+        async function enviarNotif(autor, msg) {
+            if(autor === autorLogueado) return;
+            await addDoc(notifRef, { para: autor, texto: msg, leida: false, fecha: Date.now() });
+        }
+
+        // --- LIKES Y COMENTARIOS ---
+        window.darLike = async (id) => {
+            if(localStorage.getItem(`liked_${id}`)) return alert("Ya diste like.");
+            const dRef = doc(db, "scripts", id);
+            const s = await getDoc(dRef);
+            if(s.exists()){
+                await updateDoc(dRef, { likes: increment(1) });
+                localStorage.setItem(`liked_${id}`, "true");
+                enviarNotif(s.data().autor, `❤️ Alguien dio like a ${s.data().nombreSistema}`);
+            }
+        };
+
+        window.comentar = async (id) => {
+            const inp = document.getElementById(`input-comm-${id}`);
+            if(!inp.value) return;
+            const dRef = doc(db, "scripts", id);
+            const s = await getDoc(dRef);
+            await updateDoc(dRef, {
+                comentarios: arrayUnion({ usuario: autorLogueado, texto: inp.value, fecha: Date.now() })
+            });
+            enviarNotif(s.data().autor, `💬 ${autorLogueado} comentó en ${s.data().nombreSistema}`);
+            inp.value = "";
+        };
+
+        // --- RENDERIZADO ---
+        onSnapshot(query(scriptsRef, orderBy("fecha", "desc")), (snap) => {
+            todosLosProyectos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizarProyectos(todosLosProyectos);
+        });
+
+        function renderizarProyectos(proyectos) {
+            const cont = document.getElementById('contenedor-scripts');
+            cont.innerHTML = "";
+            proyectos.forEach(p => {
+                const id = p.id;
+                const archivosHTML = p.archivos.map((f, i) => `
+                    <div class="archivo-dentro-carpeta">
+                        <div class="archivo-header" onclick="window.toggleArchivo('${id}-${i}')">
+                            <span><strong>${f.tipo}</strong> ${f.nombre}.lua</span>
+                            <div class="actions">
+                                <button class="copy-btn edit-only" style="display:none; background:#0ea5e9;" onclick="event.stopPropagation(); window.abrirEditor('${id}', ${i})">📝</button>
+                                <button class="delete-btn small-btn edit-only" style="display:none;" onclick="event.stopPropagation(); window.borrarArchivo('${id}', ${i})">❌</button>
+                                <button class="copy-btn" onclick="event.stopPropagation(); window.copyCode('${id}-${i}')">Copiar</button>
+                            </div>
+                        </div>
+                        <div id="editor-${id}-${i}" style="display:none; padding:10px;">
+                            <textarea id="txt-${id}-${i}" rows="5" style="width:100%; background:#0f172a; color:#38bdf8; border:1px solid #334155; padding:5px;">${f.codigo}</textarea>
+                            <button class="btn-main" style="margin-top:5px;" onclick="window.guardarEdicion('${id}', ${i})">Guardar</button>
+                        </div>
+                        <pre id="code-${id}-${i}" class="line-numbers" style="display:none;"><code class="language-lua">${f.codigo}</code></pre>
+                    </div>`).join('');
+
+                cont.innerHTML += `
+                <div class="folder-block" id="folder-${id}">
+                    <div class="folder-header">
+                        <h3>📂 ${p.nombreSistema} <small>by ${p.autor}</small></h3>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-secundario" onclick="window.habilitarEdicion('${id}')">⚙️</button>
+                            <button class="delete-btn edit-only" style="display:none;" onclick="window.eliminarTodo('${id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="folder-body">${archivosHTML}</div>
+                    <div class="folder-footer" style="padding:15px; border-top:1px solid rgba(255,255,255,0.05);">
+                        <div style="display:flex; gap:15px; margin-bottom:10px; align-items:center;">
+                            <button onclick="window.darLike('${id}')" style="background:none; border:none; color:white; cursor:pointer; font-size:1rem;">❤️ ${p.likes || 0}</button>
+                            <span style="font-size:0.8rem; color:#94a3b8;">💬 ${(p.comentarios || []).length}</span>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="input-comm-${id}" placeholder="Escribe un comentario..." style="flex:1; background:#0f172a; border:1px solid #334155; color:white; padding:8px; border-radius:4px;">
+                            <button class="btn-main" onclick="window.comentar('${id}')" style="padding:0 15px;">Post</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            Prism.highlightAll();
+        }
+
+        // --- FUNCIONALIDADES DE BOTONES ---
+        window.toggleArchivo = (id) => {
+            const el = document.getElementById(`code-${id}`);
+            el.style.display = el.style.display === "none" ? "block" : "none";
+        };
+
+        window.copyCode = (id) => {
+            navigator.clipboard.writeText(document.getElementById(`code-${id}`).innerText);
+            alert("Copiado al portapapeles");
+        };
+
+        window.habilitarEdicion = async (id) => {
+            const clave = prompt("Introduce la clave:");
+            const snap = await getDoc(doc(db, "scripts", id));
+            if(snap.exists() && snap.data().clave === clave) {
+                document.getElementById(`folder-${id}`).querySelectorAll('.edit-only').forEach(el => el.style.display = 'inline-block');
+            } else alert("Clave incorrecta");
+        };
+
+        window.abrirEditor = (id, i) => {
+            document.getElementById(`editor-${id}-${i}`).style.display = 'block';
+            document.getElementById(`code-${id}-${i}`).style.display = 'none';
+        };
+
+        window.guardarEdicion = async (id, i) => {
+            const dRef = doc(db, "scripts", id);
+            const snap = await getDoc(dRef);
+            let archs = [...snap.data().archivos];
+            archs[i].codigo = document.getElementById(`txt-${id}-${i}`).value;
+            await updateDoc(dRef, { archivos: archs });
+            alert("Actualizado");
+        };
+
+        window.eliminarTodo = async (id) => {
+            if(confirm("¿Seguro que quieres borrar todo el sistema?")) await deleteDoc(doc(db, "scripts", id));
+        };
+
+        window.borrarArchivo = async (id, i) => {
+            const dRef = doc(db, "scripts", id);
+            const snap = await getDoc(dRef);
+            let archs = [...snap.data().archivos];
+            archs.splice(i, 1);
+            archs.length === 0 ? await deleteDoc(dRef) : await updateDoc(dRef, { archivos: archs });
+        };
+
+        // --- LÓGICA DE PUBLICACIÓN ---
+        document.getElementById('btn-agregar-archivo').onclick = () => {
+            const n = document.getElementById('temp-nombre').value;
+            const t = document.getElementById('temp-tipo').value;
+            const c = document.getElementById('temp-codigo').value;
+            if(!n || !c) return alert("Completa los campos del archivo");
+            archivosTemporales.push({ nombre: n, tipo: t, codigo: c });
+            document.getElementById('temp-nombre').value = "";
+            document.getElementById('temp-codigo').value = "";
+            actualizarPrevia();
+        };
+
+        function actualizarPrevia() {
+            const cont = document.getElementById('lista-archivos-previa');
+            cont.innerHTML = archivosTemporales.map(f => `<div style="padding:5px; font-size:0.8rem; color:var(--accent)">📄 ${f.nombre} (${f.tipo})</div>`).join('');
+            document.getElementById('btn-publicar-todo').style.display = archivosTemporales.length > 0 ? "block" : "none";
+        }
+
+        document.getElementById('form-proyecto').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-publicar-todo');
+            btn.disabled = true;
+            await addDoc(scriptsRef, {
+                autor: document.getElementById('autor').value,
+                nombreSistema: document.getElementById('nombre-sistema').value,
+                clave: document.getElementById('clave-eliminar').value,
+                archivos: archivosTemporales,
+                likes: 0,
+                comentarios: [],
+                fecha: Date.now()
+            });
+            archivosTemporales = [];
+            actualizarPrevia();
+            e.target.reset();
+            document.getElementById('autor').value = autorLogueado;
+            btn.disabled = false;
+            alert("¡Sistema Publicado!");
+        };
+
+        // Buscador
+        document.getElementById('buscador').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const filt = todosLosProyectos.filter(p => p.nombreSistema.toLowerCase().includes(val) || p.autor.toLowerCase().includes(val));
+            renderizarProyectos(filt);
+        };
+
+        document.getElementById('btn-campana').onclick = () => {
+            const p = document.getElementById('panel-notificaciones');
+            p.style.display = p.style.display === "none" ? "block" : "none";
+        };
+    </script>
 </body>
 </html>
