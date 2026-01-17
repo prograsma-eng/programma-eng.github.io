@@ -7,75 +7,70 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
     <header style="padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); position: sticky; top:0; z-index:1000;">
-    <h1 style="font-size: 1.2rem; color: var(--accent);">Prograsma123</h1>
-    
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="auth-container">
-            <button id="btn-login" class="btn-secundario" style="padding: 5px 15px; font-size: 0.8rem;">Iniciar Sesión con Google</button>
-            <span id="user-display" style="cursor: pointer; font-size: 0.8rem; color: var(--accent); font-weight: bold;"> 👤 Iniciar Sesión
-</span>
-        </div>
+        <h1 style="font-size: 1.2rem; color: var(--accent);">Prograsma123</h1>
         
-        <span id="user-display" style="font-size: 0.8rem; color: #94a3b8; display: none;"></span>
-        <button id="btn-logout" style="display:none; background:none; border:none; color:var(--danger); font-size:0.7rem; cursor:pointer;">Cerrar Sesión</button>
-
-        <div class="notifications-wrapper" style="position: relative;">
-            <button id="btn-campana" style="background:none; border:none; font-size: 1.5rem; cursor:pointer; position: relative;">
-                🔔 <span id="notif-count" style="display:none; position:absolute; top:0; right:0; background:red; color:white; font-size:0.6rem; border-radius:50%; padding:2px 6px; font-weight: bold;">0</span>
-            </button>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div id="auth-section" style="display: flex; align-items: center; gap: 10px;">
+                <div id="user-display" style="cursor: pointer; font-size: 0.8rem; color: var(--accent); font-weight: bold; display: flex; align-items: center;">
+                    👤 Iniciar Sesión
+                </div>
+                <button id="btn-logout" style="display:none; background:#ff444422; border:1px solid var(--danger); color:var(--danger); font-size:0.6rem; cursor:pointer; padding: 2px 5px; border-radius: 4px;">Salir</button>
             </div>
-    </div>
-</header>
 
-    <main>
-        <section id="tutoriales" class="features">
-            <div class="tutorial-content">
-                <h2 class="section-title" style="text-align: center;">Comunidad de Scripting</h2>
-                <div class="grid-cards">
-                    <div class="card"><div class="icon">🚀</div><h3>Sistemas</h3><p>Mecánicas listas para usar.</p></div>
-                    <div class="card"><div class="icon">⚙️</div><h3>Código Limpio</h3><p>Scripts optimizados.</p></div>
-                    <div class="card"><div class="icon">🖥️</div><h3>UI</h3><p>Interfaces modernas.</p></div>
+            <div class="notifications-wrapper" style="position: relative;">
+                <button id="btn-campana" style="background:none; border:none; font-size: 1.3rem; cursor:pointer; position: relative;">
+                    🔔 <span id="notif-count" style="display:none; position:absolute; top:0; right:0; background:red; color:white; font-size:0.6rem; border-radius:50%; padding:2px 5px; font-weight: bold;">0</span>
+                </button>
+                
+                <div id="panel-notificaciones" style="display:none; position: absolute; right: 0; top: 40px; width: 280px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 2000; max-height: 400px; overflow-y: auto;">
+                    <div style="padding: 10px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 0.8rem;">Notificaciones</strong>
+                        <button id="btn-limpiar-notifs" style="background:none; border:none; color:var(--accent); font-size:0.7rem; cursor:pointer;">Limpiar</button>
+                    </div>
+                    <div id="lista-notificaciones" style="font-size: 0.75rem; color: #cbd5e1;">
+                        <div style="padding: 20px; text-align: center; opacity: 0.5;">No hay notificaciones</div>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </header>
 
+    <main>
         <section id="publicar" class="tutorial-destacado">
             <div class="tutorial-content">
                 <h2>Publicar Carpeta de Scripts 📂</h2>
                 <form id="form-proyecto" class="form-comunidad">
                     <div class="form-group">
-                        <input type="text" id="autor" placeholder="Tu Nombre / User" required>
-                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema" required>
-                        <input type="password" id="clave-eliminar" placeholder="Clave para editar" required>
+                        <input type="text" id="autor" placeholder="Inicia sesión para publicar" readonly required>
+                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema (ej: Gun System)" required>
+                        <input type="password" id="clave-eliminar" placeholder="Clave para editar en el futuro" required>
                     </div>
-                    <div id="lista-archivos-previa"></div>
-                    <div class="add-script-box">
+                    <div id="lista-archivos-previa" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+                    <div class="add-script-box" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px dashed #334155;">
                         <div class="form-group">
-                            <input type="text" id="temp-nombre" placeholder="Nombre del archivo">
+                            <input type="text" id="temp-nombre" placeholder="Nombre (ej: MainClient)">
                             <select id="temp-tipo">
                                 <option value="Script">Script</option>
                                 <option value="LocalScript">LocalScript</option>
                                 <option value="ModuleScript">ModuleScript</option>
                             </select>
                         </div>
-                        <textarea id="temp-codigo" placeholder="Código Lua aquí..." rows="5"></textarea>
-                        <button type="button" id="btn-agregar-archivo" class="btn-secundario">+ Añadir Archivo</button>
+                        <textarea id="temp-codigo" placeholder="Pega tu código Lua aquí..." rows="5" style="width:100%; margin-top:10px;"></textarea>
+                        <button type="button" id="btn-agregar-archivo" class="btn-secundario" style="width:100%; margin-top:10px;">+ Añadir este archivo a la carpeta</button>
                     </div>
-                    <button type="submit" id="btn-publicar-todo" class="btn-main" style="display:none; width: 100%; margin-top:15px;">Publicar Sistema Completo</button>
+                    <button type="submit" id="btn-publicar-todo" class="btn-main" style="display:none; width: 100%; margin-top:15px; background: var(--accent); color: #000;">🚀 Publicar Sistema Completo</button>
                 </form>
             </div>
         </section>
 
         <section id="comunidad" class="tutorial-destacado">
             <div class="tutorial-content">
-                <h2 style="text-align: center; margin-bottom: 30px;">Biblioteca Global</h2>
-                <div class="search-container">
-                    <input type="text" id="buscador" class="search-input" placeholder="Buscar por nombre, autor o contenido...">
-                    <span class="search-icon">🔍</span>
+                <h2 style="text-align: center; margin-bottom: 20px;">Biblioteca de la Comunidad</h2>
+                <div class="search-container" style="margin-bottom: 30px;">
+                    <input type="text" id="buscador" class="search-input" placeholder="Buscar por sistema o autor...">
                 </div>
                 <div id="contenedor-scripts"></div>
             </div>
@@ -86,275 +81,243 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-lua.min.js"></script>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc, increment, arrayUnion, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    // Módulo de Autenticación
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc, increment, arrayUnion, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
-        authDomain: "robloxcommunity-bb652.firebaseapp.com",
-        projectId: "robloxcommunity-bb652",
-        storageBucket: "robloxcommunity-bb652.firebasestorage.app",
-        messagingSenderId: "114286923700",
-        appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
+            authDomain: "robloxcommunity-bb652.firebaseapp.com",
+            projectId: "robloxcommunity-bb652",
+            storageBucket: "robloxcommunity-bb652.firebasestorage.app",
+            messagingSenderId: "114286923700",
+            appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-    const scriptsRef = collection(db, "scripts");
-    const notifRef = collection(db, "notificaciones");
+        const scriptsRef = collection(db, "scripts");
+        const notifRef = collection(db, "notificaciones");
 
-    let archivosTemporales = [];
-    let todosLosProyectos = [];
-    let autorLogueado = "Invitado";
-    let fotoUsuario = "";
+        let archivosTemporales = [];
+        let todosLosProyectos = [];
+        let autorLogueado = "Invitado";
 
-    // --- MANEJO DE AUTENTICACIÓN ---
-    const btnLogin = document.getElementById('btn-login'); // Asegúrate de tener este ID en tu HTML
-    const userDisplay = document.getElementById('user-display');
-    const inputAutor = document.getElementById('autor');
+        // --- AUTENTICACIÓN ---
+        const userDisplay = document.getElementById('user-display');
+        const btnLogout = document.getElementById('btn-logout');
+        const inputAutor = document.getElementById('autor');
 
-    // Función para iniciar sesión
-    window.loginConGoogle = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error("Error en login:", error);
-            alert("No se pudo iniciar sesión con Google.");
-        }
-    };
-
-    // Escuchar cambios de estado (Login/Logout)
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            autorLogueado = user.displayName;
-            fotoUsuario = user.photoURL;
-            userDisplay.innerHTML = `<img src="${fotoUsuario}" style="width:25px; border-radius:50%; vertical-align:middle; margin-right:5px;"> ${autorLogueado}`;
-            inputAutor.value = autorLogueado;
-            inputAutor.readOnly = true;
-            // Iniciar notificaciones solo cuando hay usuario
-            escucharNotificaciones();
-        } else {
-            autorLogueado = "Invitado";
-            userDisplay.innerText = "👤 Iniciar Sesión";
-            userDisplay.onclick = window.loginConGoogle;
-            inputAutor.value = "";
-            inputAutor.readOnly = false;
-        }
-    });
-
-    // --- NOTIFICACIONES REAL-TIME ---
-    function escucharNotificaciones() {
-        const qNotifs = query(notifRef, where("para", "==", autorLogueado), orderBy("fecha", "desc"));
-        onSnapshot(qNotifs, (snapshot) => {
-            const lista = document.getElementById('lista-notificaciones');
-            const count = document.getElementById('notif-count');
-            let unread = 0;
-
-            if (snapshot.empty) {
-                lista.innerHTML = "No hay notificaciones.";
-                count.style.display = "none";
-                return;
+        userDisplay.onclick = async () => {
+            if (autorLogueado === "Invitado") {
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (e) { alert("Error al conectar con Google"); }
             }
+        };
 
-            lista.innerHTML = snapshot.docs.map(d => {
-                const n = d.data();
-                if(!n.leida) unread++;
-                return `<div style="padding:10px; border-bottom:1px solid #334155; ${!n.leida ? 'background:rgba(56,189,248,0.05); border-left:2px solid var(--accent);' : ''}">
-                    ${n.texto} <br><small style="opacity:0.5">${new Date(n.fecha).toLocaleString()}</small>
+        btnLogout.onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                autorLogueado = user.displayName;
+                userDisplay.innerHTML = `<img src="${user.photoURL}" style="width:20px; border-radius:50%; margin-right:8px;"> ${user.displayName}`;
+                btnLogout.style.display = "block";
+                inputAutor.value = user.displayName;
+                escucharNotificaciones();
+            } else {
+                autorLogueado = "Invitado";
+                userDisplay.innerHTML = "👤 Iniciar Sesión";
+                btnLogout.style.display = "none";
+                inputAutor.value = "";
+                document.getElementById('lista-notificaciones').innerHTML = "Inicia sesión para ver notificaciones.";
+            }
+        });
+
+        // --- NOTIFICACIONES ---
+        function escucharNotificaciones() {
+            const q = query(notifRef, where("para", "==", autorLogueado), orderBy("fecha", "desc"));
+            onSnapshot(q, (snap) => {
+                const count = document.getElementById('notif-count');
+                const lista = document.getElementById('lista-notificaciones');
+                let unread = 0;
+                
+                if (snap.empty) {
+                    lista.innerHTML = "<div style='padding:20px; text-align:center;'>No hay nada nuevo</div>";
+                    count.style.display = "none";
+                    return;
+                }
+
+                lista.innerHTML = snap.docs.map(d => {
+                    const n = d.data();
+                    if (!n.leida) unread++;
+                    return `<div style="padding:12px; border-bottom:1px solid #334155; ${!n.leida ? 'background:#38bdf80a; border-left:3px solid var(--accent);' : ''}">
+                        ${n.texto}<br><small style="opacity:0.5">${new Date(n.fecha).toLocaleTimeString()}</small>
+                    </div>`;
+                }).join('');
+
+                count.innerText = unread;
+                count.style.display = unread > 0 ? "block" : "none";
+            });
+        }
+
+        document.getElementById('btn-limpiar-notifs').onclick = async () => {
+            const q = query(notifRef, where("para", "==", autorLogueado), where("leida", "==", false));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(d => batch.update(d.ref, { leida: true }));
+            await batch.commit();
+        };
+
+        document.getElementById('btn-campana').onclick = (e) => {
+            e.stopPropagation();
+            const panel = document.getElementById('panel-notificaciones');
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+        };
+
+        document.addEventListener('click', () => {
+            document.getElementById('panel-notificaciones').style.display = "none";
+        });
+
+        // --- LÓGICA DE SCRIPTS ---
+        document.getElementById('btn-agregar-archivo').onclick = () => {
+            const n = document.getElementById('temp-nombre').value;
+            const t = document.getElementById('temp-tipo').value;
+            const c = document.getElementById('temp-codigo').value;
+            if (!n || !c) return alert("Nombre y Código obligatorios");
+            
+            archivosTemporales.push({ nombre: n, tipo: t, codigo: c });
+            document.getElementById('temp-nombre').value = "";
+            document.getElementById('temp-codigo').value = "";
+            actualizarPrevia();
+        };
+
+        function actualizarPrevia() {
+            const cont = document.getElementById('lista-archivos-previa');
+            cont.innerHTML = archivosTemporales.map((f, i) => `
+                <span style="background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold;">
+                    ${f.nombre}.lua <span onclick="window.borrarTemp(${i})" style="cursor:pointer; margin-left:5px;">×</span>
+                </span>`).join('');
+            document.getElementById('btn-publicar-todo').style.display = archivosTemporales.length > 0 ? "block" : "none";
+        }
+
+        window.borrarTemp = (i) => { archivosTemporales.splice(i, 1); actualizarPrevia(); };
+
+        document.getElementById('form-proyecto').onsubmit = async (e) => {
+            e.preventDefault();
+            if (autorLogueado === "Invitado") return alert("Inicia sesión primero");
+            
+            const btn = document.getElementById('btn-publicar-todo');
+            btn.disabled = true;
+            btn.innerText = "Subiendo...";
+
+            await addDoc(scriptsRef, {
+                autor: autorLogueado,
+                nombreSistema: document.getElementById('nombre-sistema').value,
+                clave: document.getElementById('clave-eliminar').value,
+                archivos: archivosTemporales,
+                likes: 0,
+                comentarios: [],
+                fecha: Date.now()
+            });
+
+            archivosTemporales = [];
+            actualizarPrevia();
+            e.target.reset();
+            inputAutor.value = autorLogueado;
+            btn.disabled = false;
+            btn.innerText = "🚀 Publicar Sistema Completo";
+            alert("¡Publicado con éxito!");
+        };
+
+        // --- RENDERIZADO (Biblioteca) ---
+        onSnapshot(query(scriptsRef, orderBy("fecha", "desc")), (snap) => {
+            todosLosProyectos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizar(todosLosProyectos);
+        });
+
+        function renderizar(proyectos) {
+            const cont = document.getElementById('contenedor-scripts');
+            cont.innerHTML = proyectos.map(p => {
+                const id = p.id;
+                const files = p.archivos.map((f, i) => `
+                    <div style="background:#0f172a; margin-bottom:5px; border-radius:4px; overflow:hidden; border:1px solid #1e293b;">
+                        <div onclick="window.toggleCode('${id}-${i}')" style="padding:8px 12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                            <span>📄 <strong>${f.tipo}</strong> ${f.nombre}</span>
+                            <button class="copy-btn" onclick="event.stopPropagation(); window.copy('${id}-${i}')">Copiar</button>
+                        </div>
+                        <pre id="code-${id}-${i}" style="display:none; margin:0; font-size:0.75rem;"><code class="language-lua">${f.codigo}</code></pre>
+                    </div>
+                `).join('');
+
+                return `
+                <div class="folder-block" style="background:var(--bg-card); border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #334155;">
+                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:15px;">
+                        <div>
+                            <h3 style="color:var(--accent); margin:0;">📂 ${p.nombreSistema}</h3>
+                            <small style="opacity:0.6;">Por ${p.autor}</small>
+                        </div>
+                        <button onclick="window.darLike('${id}')" style="background:none; border:1px solid #334155; color:white; padding:5px 10px; border-radius:20px; cursor:pointer;">❤️ ${p.likes || 0}</button>
+                    </div>
+                    <div>${files}</div>
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <input type="text" id="comm-${id}" placeholder="Escribe un comentario..." style="flex:1; background:#0f172a; border:1px solid #334155; color:white; padding:5px 10px; border-radius:4px; font-size:0.8rem;">
+                        <button onclick="window.postComm('${id}')" class="btn-main" style="padding:5px 15px; font-size:0.8rem;">Post</button>
+                    </div>
                 </div>`;
             }).join('');
-
-            count.innerText = unread;
-            count.style.display = unread > 0 ? "block" : "none";
-        });
-    }
-
-    window.limpiarNotificaciones = async () => {
-        const q = query(notifRef, where("para", "==", autorLogueado), where("leida", "==", false));
-        const querySnapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        querySnapshot.forEach((d) => {
-            batch.update(doc(db, "notificaciones", d.id), { leida: true });
-        });
-        await batch.commit();
-    };
-    document.getElementById('btn-limpiar-notifs').onclick = window.limpiarNotificaciones;
-
-    async function enviarNotif(autor, msg) {
-        if(autor === autorLogueado) return;
-        await addDoc(notifRef, { para: autor, texto: msg, leida: false, fecha: Date.now() });
-    }
-
-    // --- LIKES Y COMENTARIOS ---
-    window.darLike = async (id) => {
-        if(autorLogueado === "Invitado") return alert("Inicia sesión para dar like.");
-        if(localStorage.getItem(`liked_${id}`)) return alert("Ya diste like.");
-        
-        const dRef = doc(db, "scripts", id);
-        const s = await getDoc(dRef);
-        if(s.exists()){
-            await updateDoc(dRef, { likes: increment(1) });
-            localStorage.setItem(`liked_${id}`, "true");
-            enviarNotif(s.data().autor, `❤️ ${autorLogueado} dio like a ${s.data().nombreSistema}`);
+            if(window.Prism) Prism.highlightAll();
         }
-    };
 
-    window.comentar = async (id) => {
-        if(autorLogueado === "Invitado") return alert("Inicia sesión para comentar.");
-        const inp = document.getElementById(`input-comm-${id}`);
-        if(!inp.value) return;
-        
-        const dRef = doc(db, "scripts", id);
-        const s = await getDoc(dRef);
-        await updateDoc(dRef, {
-            comentarios: arrayUnion({ usuario: autorLogueado, texto: inp.value, fecha: Date.now() })
-        });
-        enviarNotif(s.data().autor, `💬 ${autorLogueado} comentó en ${s.data().nombreSistema}`);
-        inp.value = "";
-    };
+        // --- FUNCIONES GLOBALES ---
+        window.toggleCode = (id) => {
+            const el = document.getElementById(`code-${id}`);
+            el.style.display = el.style.display === "none" ? "block" : "none";
+        };
 
-    // --- RENDERIZADO Y PUBLICACIÓN ---
-    onSnapshot(query(scriptsRef, orderBy("fecha", "desc")), (snap) => {
-        todosLosProyectos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderizarProyectos(todosLosProyectos);
-    });
+        window.copy = (id) => {
+            const text = document.getElementById(`code-${id}`).innerText;
+            navigator.clipboard.writeText(text);
+            alert("Código copiado");
+        };
 
-    function renderizarProyectos(proyectos) {
-        const cont = document.getElementById('contenedor-scripts');
-        cont.innerHTML = "";
-        proyectos.forEach(p => {
-            const id = p.id;
-            const archivosHTML = p.archivos.map((f, i) => `
-                <div class="archivo-dentro-carpeta">
-                    <div class="archivo-header" onclick="window.toggleArchivo('${id}-${i}')">
-                        <span><strong>${f.tipo}</strong> ${f.nombre}.lua</span>
-                        <div class="actions">
-                            <button class="copy-btn edit-only" style="display:none; background:#0ea5e9;" onclick="event.stopPropagation(); window.abrirEditor('${id}', ${i})">📝</button>
-                            <button class="delete-btn small-btn edit-only" style="display:none;" onclick="event.stopPropagation(); window.borrarArchivo('${id}', ${i})">❌</button>
-                            <button class="copy-btn" onclick="event.stopPropagation(); window.copyCode('${id}-${i}')">Copiar</button>
-                        </div>
-                    </div>
-                    <div id="editor-${id}-${i}" style="display:none; padding:10px;">
-                        <textarea id="txt-${id}-${i}" rows="5" style="width:100%; background:#0f172a; color:#38bdf8; border:1px solid #334155; padding:5px;">${f.codigo}</textarea>
-                        <button class="btn-main" style="margin-top:5px;" onclick="window.guardarEdicion('${id}', ${i})">Guardar</button>
-                    </div>
-                    <pre id="code-${id}-${i}" class="line-numbers" style="display:none;"><code class="language-lua">${f.codigo}</code></pre>
-                </div>`).join('');
+        window.darLike = async (id) => {
+            if (autorLogueado === "Invitado") return alert("Logueate");
+            if (localStorage.getItem('L_'+id)) return alert("Ya diste like");
+            const d = doc(db, "scripts", id);
+            await updateDoc(d, { likes: increment(1) });
+            localStorage.setItem('L_'+id, true);
+            const snap = await getDoc(d);
+            enviarNotif(snap.data().autor, `❤️ ${autorLogueado} dio like a tu sistema ${snap.data().nombreSistema}`);
+        };
 
-            cont.innerHTML += `
-            <div class="folder-block" id="folder-${id}">
-                <div class="folder-header">
-                    <h3>📂 ${p.nombreSistema} <small>by ${p.autor}</small></h3>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-secundario" onclick="window.habilitarEdicion('${id}')">⚙️</button>
-                        <button class="delete-btn edit-only" style="display:none;" onclick="window.eliminarTodo('${id}')">🗑️</button>
-                    </div>
-                </div>
-                <div class="folder-body">${archivosHTML}</div>
-                <div class="folder-footer" style="padding:15px; border-top:1px solid rgba(255,255,255,0.05);">
-                    <div style="display:flex; gap:15px; margin-bottom:10px; align-items:center;">
-                        <button onclick="window.darLike('${id}')" style="background:none; border:none; color:white; cursor:pointer; font-size:1rem;">❤️ ${p.likes || 0}</button>
-                        <span style="font-size:0.8rem; color:#94a3b8;">💬 ${(p.comentarios || []).length}</span>
-                    </div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="input-comm-${id}" placeholder="Escribe un comentario..." style="flex:1; background:#0f172a; border:1px solid #334155; color:white; padding:8px; border-radius:4px;">
-                        <button class="btn-main" onclick="window.comentar('${id}')" style="padding:0 15px;">Post</button>
-                    </div>
-                </div>
-            </div>`;
-        });
-        Prism.highlightAll();
-    }
+        window.postComm = async (id) => {
+            if (autorLogueado === "Invitado") return alert("Logueate");
+            const inp = document.getElementById(`comm-${id}`);
+            if(!inp.value) return;
+            const d = doc(db, "scripts", id);
+            await updateDoc(d, { comentarios: arrayUnion({ user: autorLogueado, text: inp.value, date: Date.now() }) });
+            const snap = await getDoc(d);
+            enviarNotif(snap.data().autor, `💬 ${autorLogueado} comentó en ${snap.data().nombreSistema}`);
+            inp.value = "";
+        };
 
-    // Botones de código y edición
-    window.toggleArchivo = (id) => {
-        const el = document.getElementById(`code-${id}`);
-        el.style.display = el.style.display === "none" ? "block" : "none";
-    };
+        async function enviarNotif(para, texto) {
+            if (para === autorLogueado) return;
+            await addDoc(notifRef, { para, texto, leida: false, fecha: Date.now() });
+        }
 
-    window.copyCode = (id) => {
-        navigator.clipboard.writeText(document.getElementById(`code-${id}`).innerText);
-        alert("Copiado al portapapeles");
-    };
-
-    window.habilitarEdicion = async (id) => {
-        const clave = prompt("Introduce la clave de edición:");
-        const snap = await getDoc(doc(db, "scripts", id));
-        if(snap.exists() && snap.data().clave === clave) {
-            document.getElementById(`folder-${id}`).querySelectorAll('.edit-only').forEach(el => el.style.display = 'inline-block');
-        } else alert("Clave incorrecta");
-    };
-
-    window.guardarEdicion = async (id, i) => {
-        const dRef = doc(db, "scripts", id);
-        const snap = await getDoc(dRef);
-        let archs = [...snap.data().archivos];
-        archs[i].codigo = document.getElementById(`txt-${id}-${i}`).value;
-        await updateDoc(dRef, { archivos: archs });
-        alert("Actualizado correctamente");
-    };
-
-    window.eliminarTodo = async (id) => {
-        if(confirm("¿Seguro que quieres borrar todo el sistema?")) await deleteDoc(doc(db, "scripts", id));
-    };
-
-    // Lógica para agregar archivos al sistema antes de publicar
-    document.getElementById('btn-agregar-archivo').onclick = () => {
-        const n = document.getElementById('temp-nombre').value;
-        const t = document.getElementById('temp-tipo').value;
-        const c = document.getElementById('temp-codigo').value;
-        if(!n || !c) return alert("Completa los campos del archivo");
-        archivosTemporales.push({ nombre: n, tipo: t, codigo: c });
-        document.getElementById('temp-nombre').value = "";
-        document.getElementById('temp-codigo').value = "";
-        actualizarPrevia();
-    };
-
-    function actualizarPrevia() {
-        const cont = document.getElementById('lista-archivos-previa');
-        cont.innerHTML = archivosTemporales.map(f => `<div style="padding:5px; font-size:0.8rem; color:var(--accent)">📄 ${f.nombre} (${f.tipo})</div>`).join('');
-        document.getElementById('btn-publicar-todo').style.display = archivosTemporales.length > 0 ? "block" : "none";
-    }
-
-    document.getElementById('form-proyecto').onsubmit = async (e) => {
-        e.preventDefault();
-        if(autorLogueado === "Invitado") return alert("Debes iniciar sesión con Google para publicar.");
-        
-        const btn = document.getElementById('btn-publicar-todo');
-        btn.disabled = true;
-        await addDoc(scriptsRef, {
-            autor: autorLogueado,
-            nombreSistema: document.getElementById('nombre-sistema').value,
-            clave: document.getElementById('clave-eliminar').value,
-            archivos: archivosTemporales,
-            likes: 0,
-            comentarios: [],
-            fecha: Date.now()
-        });
-        archivosTemporales = [];
-        actualizarPrevia();
-        e.target.reset();
-        inputAutor.value = autorLogueado;
-        btn.disabled = false;
-        alert("¡Sistema Publicado!");
-    };
-
-    // Buscador
-    document.getElementById('buscador').oninput = (e) => {
-        const val = e.target.value.toLowerCase();
-        const filt = todosLosProyectos.filter(p => p.nombreSistema.toLowerCase().includes(val) || p.autor.toLowerCase().includes(val));
-        renderizarProyectos(filt);
-    };
-
-    document.getElementById('btn-campana').onclick = () => {
-        const p = document.getElementById('panel-notificaciones');
-        p.style.display = p.style.display === "none" ? "block" : "none";
-    };
-</script>
+        document.getElementById('buscador').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = todosLosProyectos.filter(p => 
+                p.nombreSistema.toLowerCase().includes(val) || 
+                p.autor.toLowerCase().includes(val)
+            );
+            renderizar(filtered);
+        };
+    </script>
 </body>
 </html>
