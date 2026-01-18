@@ -3,270 +3,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prograsma123 | Comunidad de Devs Roblox</title>
+    <title>Prograsma123 | Admin Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body>
-    <header style="padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); position: sticky; top:0; z-index:1000;">
-        <h1 style="font-size: 1.2rem; color: var(--accent);">Prograsma123</h1>
-        
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div id="auth-section" style="display: flex; align-items: center; gap: 10px;">
-                <div id="user-display" style="cursor: pointer; font-size: 0.8rem; color: var(--accent); font-weight: bold; display: flex; align-items: center;">
-                    👤 Iniciar Sesión
-                </div>
-                <button id="btn-logout" style="display:none; background:#ff444422; border:1px solid var(--danger); color:var(--danger); font-size:0.6rem; cursor:pointer; padding: 2px 5px; border-radius: 4px;">Salir</button>
+
+    <header>
+        <div class="header-container">
+            <div class="logo-container">
+                <div class="logo-box">DEVS</div>
+                <h1 class="logo-text">Desarrolladores de<span> Roblox</span></h1>
+            </div>
+            
+            <div class="header-search">
+                <input type="text" id="buscador-input" placeholder="Buscar scripts, sistemas o autores...">
             </div>
 
-            <div class="notifications-wrapper" style="position: relative;">
-                <button id="btn-campana" style="background:none; border:none; font-size: 1.3rem; cursor:pointer; position: relative;">
-                    🔔 <span id="notif-count" style="display:none; position:absolute; top:0; right:0; background:red; color:white; font-size:0.6rem; border-radius:50%; padding:2px 5px; font-weight: bold;">0</span>
-                </button>
-                
-                <div id="panel-notificaciones" style="display:none; position: absolute; right: 0; top: 40px; width: 280px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 2000; max-height: 400px; overflow-y: auto;">
-                    <div style="padding: 10px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="font-size: 0.8rem;">Notificaciones</strong>
-                        <button id="btn-limpiar-notifs" style="background:none; border:none; color:var(--accent); font-size:0.7rem; cursor:pointer;">Limpiar</button>
-                    </div>
-                    <div id="lista-notificaciones" style="font-size: 0.75rem; color: #cbd5e1;">
-                        <div style="padding: 20px; text-align: center; opacity: 0.5;">No hay notificaciones</div>
-                    </div>
-                </div>
-            </div>
+            <div id="user-button"></div>
         </div>
     </header>
 
-    <main>
-        <section id="publicar" class="tutorial-destacado">
-            <div class="tutorial-content">
-                <h2>Publicar Carpeta de Scripts 📂</h2>
-                <form id="form-proyecto" class="form-comunidad">
-                    <div class="form-group">
-                        <input type="text" id="autor" placeholder="Inicia sesión para publicar" readonly required>
-                        <input type="text" id="nombre-sistema" placeholder="Nombre del Sistema" required>
-                        <input type="password" id="clave-eliminar" placeholder="Clave para editar" required>
-                    </div>
-                    <div id="lista-archivos-previa" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
-                    <div class="add-script-box" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px dashed #334155;">
-                        <div class="form-group">
-                            <input type="text" id="temp-nombre" placeholder="Nombre (ej: MainClient)">
-                            <select id="temp-tipo">
-                                <option value="Script">Script</option>
-                                <option value="LocalScript">LocalScript</option>
-                                <option value="ModuleScript">ModuleScript</option>
-                            </select>
-                        </div>
-                        <textarea id="temp-codigo" placeholder="Pega tu código Lua aquí..." rows="5" style="width:100%; margin-top:10px;"></textarea>
-                        <button type="button" id="btn-agregar-archivo" class="btn-secundario" style="width:100%; margin-top:10px;">+ Añadir este archivo</button>
-                    </div>
-                    <button type="submit" id="btn-publicar-todo" class="btn-main" style="display:none; width: 100%; margin-top:15px; background: var(--accent); color: #000;">🚀 Publicar Sistema Completo</button>
-                </form>
+    <main class="main-content">
+        
+        <section class="hero-section">
+            <div class="hero-text">
+                <h2 class="hero-title">Comunidad de Desarrolladores <span>Roblox</span></h2>
+                <p class="hero-subtitle">Explora, comparte y gestiona tus sistemas de forma profesional en una sola plataforma creado por Prograsma123.</p>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value">Compartir</span>
+                    <span class="stat-label">Sistemas</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">Free</span>
+                    <span class="stat-label">Acceso</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">24/7</span>
+                    <span class="stat-label">Comunidad</span>
+                </div>
             </div>
         </section>
 
-        <section id="comunidad" class="tutorial-destacado">
-            <div class="tutorial-content">
-                <h2 style="text-align: center; margin-bottom: 20px;">Biblioteca de la Comunidad</h2>
-                <div class="search-container" style="margin-bottom: 30px;">
-                    <input type="text" id="buscador" class="search-input" placeholder="Buscar por sistema o autor...">
-                </div>
-                <div id="contenedor-scripts"></div>
+        <section id="panel-admin" class="admin-panel" style="display: none;">
+            <div class="admin-header">
+                <span class="admin-badge">🛡️ Panel de Seguridad</span>
+                <h2 class="admin-title">Reportes de la Comunidad</h2>
             </div>
+            <div id="contenedor-reportes">Cargando reportes...</div>
         </section>
+
+        <section id="seccion-publicar" class="publish-section">
+            <div class="section-header">
+                <div class="icon-box">🚀</div>
+                <div class="text-box">
+                    <h3 class="publish-title">Compartir Nuevo Sistema</h3>
+                    <p class="publish-desc">Organiza tus scripts en una carpeta pública.</p>
+                </div>
+            </div>
+
+            <form id="form-sistema">
+                <div class="form-row">
+                    <input type="text" id="sys-titulo" placeholder="Nombre del sistema (ej: Anti-Exploit)" required>
+                    <select id="sys-tag">
+                        <option value="General">📂 Categoría: General</option>
+                        <option value="GUI">🎨 Categoría: GUI / UI</option>
+                        <option value="Combate">⚔️ Categoría: Combate</option>
+                        <option value="Admin">🛠️ Categoría: Admin Tools</option>
+                    </select>
+                </div>
+
+                <div id="archivos-input-container" class="scripts-input-list">
+                    </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-add-script" onclick="agregarCampoArchivo()">+ Añadir Script a la Carpeta</button>
+                    <button type="submit" class="btn-submit">Publicar en la Comunidad</button>
+                </div>
+            </form>
+        </section>
+
+        <nav class="filter-bar">
+            <button class="filter-btn active">Todos los sistemas</button>
+            <button class="filter-btn">Más Valorados 🔥</button>
+            <button class="filter-btn">Recientes</button>
+            <button class="filter-btn">Mis Publicaciones</button>
+        </nav>
+
+        <div id="contenedor-sistemas" class="systems-grid">
+            </div>
+
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-lua.min.js"></script>
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Prograsma123 - Hecho para desarrolladores de Roblox.</p>
+            <div class="footer-links">
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Soporte</a>
+            </div>
+        </div>
+    </footer>
 
     <script type="module">
+        // Mantenemos toda tu lógica de Firebase y Clerk exactamente igual
+        window.editandoId = null;
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc, increment, arrayUnion, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4",
-  authDomain: "robloxcommunity-bb652.firebaseapp.com",
-  projectId: "robloxcommunity-bb652",
-  storageBucket: "robloxcommunity-bb652.firebasestorage.app",
-  messagingSenderId: "114286923700",
-  appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1",
-  measurementId: "G-8Z8WTR62VL"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyA6HiPcffZ6fCvaXm0RKjs2Zd-t_siSjb4", authDomain: "robloxcommunity-bb652.firebaseapp.com", projectId: "robloxcommunity-bb652", storageBucket: "robloxcommunity-bb652.firebasestorage.app", messagingSenderId: "114286923700", appId: "1:114286923700:web:d6cb6a07d36bf85e6b6ce1" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        const MI_ADMIN_ID = "user_38PKS4GkQcDO4xszlKRmaRUpc1W";
+        let todosLosSistemas = [];
 
-        const scriptsRef = collection(db, "scripts");
-        const notifRef = collection(db, "notificaciones");
+        function resaltarRoblox(codigo) {
+            if (!codigo) return "";
+            let esc = codigo.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return esc
+                .replace(/("(.*?)"|'(.*?)')/g, '<span style="color:var(--lua-string)">$1</span>')
+                .replace(/\b(function|local|if|then|else|elseif|end|while|for|do|return|and|or|not|true|false|nil)\b/g, '<span style="color:var(--lua-keyword)">$1</span>')
+                .replace(/\b(game|workspace|script|Instance|Vector3|CFrame|Color3|task|wait|spawn|print|warn|error|getgenv|getsenv)\b/g, '<span style="color:var(--lua-builtin)">$1</span>')
+                .replace(/(--.*)/g, '<span style="color:var(--lua-comment)">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span style="color:var(--lua-number)">$1</span>');
+        }
 
-        let archivosTemporales = [];
-        let todosLosProyectos = [];
-        let autorLogueado = "Invitado";
-
-        // --- AUTENTICACIÓN ---
-        const userDisplay = document.getElementById('user-display');
-        const btnLogout = document.getElementById('btn-logout');
-        const inputAutor = document.getElementById('autor');
-
-        userDisplay.onclick = async () => {
-            if (autorLogueado === "Invitado") {
-                try {
-                    // Intento 1: Popup (más rápido)
-                    await signInWithPopup(auth, provider);
-                } catch (e) {
-                    console.log("Popup bloqueado o error, intentando redirect...", e);
-                    try {
-                        // Intento 2: Redirección (funciona siempre)
-                        await signInWithRedirect(auth, provider);
-                    } catch (err) {
-                        alert("Error definitivo: " + err.message);
-                    }
-                }
-            }
-        };
-
-        btnLogout.onclick = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                autorLogueado = user.displayName;
-                userDisplay.innerHTML = `<img src="${user.photoURL}" style="width:20px; border-radius:50%; margin-right:8px;"> ${user.displayName}`;
-                btnLogout.style.display = "block";
-                inputAutor.value = user.displayName;
-                escucharNotificaciones();
+        // Lógica de Clerk
+        const scriptClerk = document.createElement('script');
+        scriptClerk.setAttribute('data-clerk-publishable-key', 'pk_test_Z3VpZGVkLWNvbGxpZS0yOC5jbGVyay5hY2NvdW50cy5kZXYk');
+        scriptClerk.async = true;
+        scriptClerk.src = 'https://allowed-moth-84.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+        scriptClerk.onload = async () => {
+            await Clerk.load();
+            if (Clerk.user) {
+                window.currentUser = Clerk.user;
+                Clerk.mountUserButton(document.getElementById('user-button'));
+                document.getElementById('seccion-publicar').style.display = 'block';
+                if (Clerk.user.id === MI_ADMIN_ID) cargarPanelAdmin();
+                agregarCampoArchivo();
             } else {
-                autorLogueado = "Invitado";
-                userDisplay.innerHTML = "👤 Iniciar Sesión";
-                btnLogout.style.display = "none";
-                inputAutor.value = "";
+                document.getElementById('user-button').innerHTML = `<button onclick="Clerk.openSignIn()" style="background:var(--accent); border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:bold; color:black;">Iniciar Sesión</button>`;
+            }
+        };
+        document.head.appendChild(scriptClerk);
+
+        // Renderizado mejorado
+        onSnapshot(query(collection(db, "sistemas"), orderBy("likes", "desc")), (snap) => {
+            todosLosSistemas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizar();
+        });
+
+      function renderizar() {
+    const cont = document.getElementById('contenedor-sistemas');
+    cont.innerHTML = todosLosSistemas.map(sys => {
+        const esDueno = window.currentUser && sys.creadorId === window.currentUser.id;
+        const modoEdicionActivo = window.editandoId === sys.id;
+
+        return `
+        <div class="sistema-container" style="${modoEdicionActivo ? 'border: 1px solid var(--accent); box-shadow: 0 0 15px rgba(0,212,255,0.1);' : ''}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <img src="${sys.foto}" style="width:48px; height:48px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <h2 id="title-${sys.id}" 
+                                contenteditable="${modoEdicionActivo}" 
+                                onblur="guardarTitulo('${sys.id}')"
+                                style="margin:0; font-size:1.15rem; font-weight:700; ${modoEdicionActivo ? 'border-bottom:2px solid var(--accent); background:rgba(0,212,255,0.05); padding:0 5px;' : ''}">${sys.titulo}</h2>
+                            <span class="tag-badge">#${sys.tag}</span>
+                        </div>
+                        <p style="margin:0; font-size:0.8rem; color:var(--text-dim);">Creado por <span style="color:white; font-weight:600;">${sys.autor}</span></p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    ${esDueno ? `
+                        <button onclick="toggleModoEditor('${sys.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem; transition:0.3s;" title="Editar Sistema">
+                            ${modoEdicionActivo ? '✅' : '✏️'}
+                        </button>
+                    ` : ''}
+                    <button onclick="reportarSistema('${sys.id}', '${sys.titulo}')" style="background:none; border:none; cursor:pointer; opacity:0.5;">🚩</button>
+                    ${esDueno ? `<button onclick="eliminarSistema('${sys.id}')" style="background:none; border:none; cursor:pointer; opacity:0.5;">🗑️</button>` : ''}
+                    <button class="btn-like" onclick="darLike('${sys.id}')">❤️ <span>${sys.likes || 0}</span></button>
+                </div>
+            </div>
+
+            ${sys.archivos.map((arc, i) => {
+                // Lógica de colores mejorada
+                let colorTipo = "#475569"; // Gris por defecto
+                if (arc.tipo === "MODULE") colorTipo = "#a855f7"; // Morado
+                if (arc.tipo === "SCRIPT") colorTipo = "#22c55e"; // Verde
+                if (arc.tipo === "LOCAL") colorTipo = "#3b82f6";  // Azul
+                
+                return `
+                <div class="archivo-header" onclick="toggleArchivo('${sys.id}-${i}')">
+                    <span style="display:flex; align-items:center; gap:10px;">
+                        <span class="tipo-badge" style="background:${colorTipo} !important; color:white; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:bold; min-width:60px; text-align:center;">
+                            ${arc.tipo}
+                        </span> 
+                        <b style="font-family:'Fira Code'; font-size:0.9rem;">${arc.nombre}.lua</b>
+                    </span>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-copy" onclick="event.stopPropagation(); copiarCodigo('${sys.id}-${i}')">📋 Copiar</button>
+                        ${modoEdicionActivo ? `
+                            <button class="btn-save" onclick="event.stopPropagation(); guardarEdicion('${sys.id}', ${i})">💾</button>
+                            <button class="btn-delete-script" onclick="event.stopPropagation(); eliminarScript('${sys.id}', ${i})" style="background:#ef4444; border:none; color:white; border-radius:6px; cursor:pointer; padding:5px 8px;">✕</button>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="codigo-wrapper" id="wrap-${sys.id}-${i}">
+                    <div class="editor-container" style="display:none; ${modoEdicionActivo ? 'border: 1px solid var(--accent);' : ''}">
+                        <div class="line-numbers">${arc.codigo.split('\n').map((_,idx)=>idx+1).join('<br>')}</div>
+                        <pre><code id="edit-${sys.id}-${i}" 
+                             contenteditable="${modoEdicionActivo}" 
+                             spellcheck="false"
+                             style="${modoEdicionActivo ? 'outline:none;' : ''}">${resaltarRoblox(arc.codigo)}</code></pre>
+                    </div>
+                </div>`;
+            }).join('')}
+
+            ${modoEdicionActivo ? `
+                <div style="padding: 10px 25px;">
+                    <button onclick="nuevoScriptEnSistema('${sys.id}')" 
+                            style="width:100%; padding:10px; border: 2px dashed var(--accent); background:transparent; color:var(--accent); border-radius:12px; cursor:pointer; font-weight:600; transition:0.3s;">
+                        + Agregar otro Script a esta carpeta
+                    </button>
+                </div>
+            ` : ''}
+
+            <div style="margin-top:25px; background: rgba(0,0,0,0.1); border-radius: 15px; padding: 15px;">
+                <form onsubmit="enviarComentario(event, '${sys.id}')" style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="text" placeholder="Escribe tu opinión..." style="margin:0; flex-grow:1; border-radius:10px; padding:10px; border:none; background:rgba(255,255,255,0.05);">
+                    <button type="submit" style="background:var(--accent); color:black; border:none; padding:0 15px; border-radius:10px; cursor:pointer; font-weight:bold;">Enviar</button>
+                </form>
+                <div id="coms-${sys.id}" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Re-ejecutar listeners de comentarios
+    todosLosSistemas.forEach(sys => {
+        onSnapshot(query(collection(db, "sistemas", sys.id, "comentarios"), orderBy("fecha", "asc")), (snap) => {
+            const cDiv = document.getElementById(`coms-${sys.id}`);
+            if (cDiv) cDiv.innerHTML = snap.docs.map(d => `
+                <div class="comentario-item">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <img src="${d.data().foto}" class="comentario-avatar" style="width:24px; height:24px;">
+                        <b style="color:var(--accent); font-size:0.75rem;">${d.data().autor}</b>
+                    </div>
+                    <p style="margin:5px 0 0 34px; font-size:0.85rem; color:var(--text-dim);">${d.data().texto}</p>
+                </div>
+            `).join('');
+        });
+    });
+}
+
+// Añadir después de renderizar()
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Quitar clase active de todos y poner al actual
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filtro = btn.innerText;
+        const cont = document.getElementById('contenedor-sistemas');
+        const cards = cont.querySelectorAll('.sistema-container');
+
+        cards.forEach((card, index) => {
+            const sys = todosLosSistemas[index];
+            if (!sys) return;
+
+            if (filtro.includes("Todos")) card.style.display = "block";
+            else if (filtro.includes("Mis Publicaciones")) {
+                card.style.display = (window.currentUser && sys.creadorId === window.currentUser.id) ? "block" : "none";
+            }
+            else if (filtro.includes("Más Valorados")) {
+                // Lógica simple: ocultar si tiene 0 likes
+                card.style.display = (sys.likes > 0) ? "block" : "none";
+            }
+        });
+    });
+});
+
+        // --- FUNCIONES GLOBALES (Mismas que antes) ---
+ window.toggleArchivo = (id) => {
+    const wrapper = document.getElementById(`wrap-${id}`);
+    const editor = wrapper.querySelector('.editor-container');
+    if (editor) {
+        editor.style.display = (editor.style.display === 'flex') ? 'none' : 'flex';
+    }
+};
+
+// ACTIVAR/DESACTIVAR EL LÁPIZ (EDICIÓN)
+window.toggleModoEditor = (id) => {
+    if (window.editandoId === id) {
+        window.editandoId = null; 
+        alert("Modo edición desactivado.");
+    } else {
+        window.editandoId = id; 
+    }
+    renderizar(); // Esto refresca la lista y activa los botones extra
+};
+// --- NUEVAS FUNCIONES DE EDICIÓN Y UTILIDAD ---
+
+// Copiar código al portapapeles
+window.nuevoScriptEnSistema = async (sysId) => {
+    // 1. Pedir el nombre
+    const nombre = prompt("Nombre del nuevo script (ej: Config):");
+    if (!nombre) return;
+    
+    // 2. Pedir el tipo con opciones claras
+    const tipoIngresado = prompt("Elige el tipo (Escribe el número):\n1. MODULE (ModuleScript)\n2. SCRIPT (Server Script)\n3. LOCAL (LocalScript)", "2");
+    
+    let tipoFinal = "Script"; // Por defecto
+    if (tipoIngresado === "1") tipoFinal = "Modulo";
+    if (tipoIngresado === "3") tipoFinal = "LocalScript";
+
+    const sistema = todosLosSistemas.find(s => s.id === sysId);
+    if (!sistema) return;
+
+    // Crear el nuevo objeto
+    const nuevoArchivo = {
+        nombre: nombre,
+        tipo: tipoFinal,
+        codigo: `-- Nuevo ${tipoFinal} creado\nlocal function init()\n\nend\n\nreturn init`
+    };
+
+    // Actualizar en Firebase
+    const nuevosArchivos = [...sistema.archivos, nuevoArchivo];
+
+    try {
+        await updateDoc(doc(db, "sistemas", sysId), { 
+            archivos: nuevosArchivos 
+        });
+        alert(`🚀 ${tipoFinal} "${nombre}" añadido con éxito.`);
+    } catch (e) {
+        console.error(e);
+        alert("Error al añadir script.");
+    }
+};
+window.copiarCodigo = (id) => {
+    // Obtenemos el texto plano ignorando el HTML del resaltado
+    const codigo = document.getElementById(`edit-${id}`).innerText;
+    navigator.clipboard.writeText(codigo).then(() => {
+        alert("🚀 Código copiado al portapapeles con éxito.");
+    }).catch(err => {
+        console.error('Error al copiar: ', err);
+    });
+};
+
+// Guardar nuevo nombre de la carpeta (Título)
+window.guardarTitulo = async (id) => {
+    const el = document.getElementById(`title-${id}`);
+    if (!el) return;
+    const nuevoTitulo = el.innerText;
+    try {
+        await updateDoc(doc(db, "sistemas", id), { titulo: nuevoTitulo });
+    } catch (e) {
+        console.error("Error al actualizar título", e);
+    }
+};
+// Eliminar un script específico de la carpeta
+window.guardarEdicion = async (sysId, arcIndex) => {
+    const nuevoCodigo = document.getElementById(`edit-${sysId}-${arcIndex}`).innerText;
+    const sistema = todosLosSistemas.find(s => s.id === sysId);
+    if (!sistema) return;
+
+    const nuevosArchivos = [...sistema.archivos];
+    nuevosArchivos[arcIndex].codigo = nuevoCodigo;
+
+    try {
+        await updateDoc(doc(db, "sistemas", sysId), { archivos: nuevosArchivos });
+        alert("✅ Cambios guardados en la nube.");
+    } catch (error) {
+        alert("❌ Error al guardar.");
+    }
+};
+
+window.eliminarScript = async (sysId, index) => {
+    if(!confirm("¿Eliminar este script de la carpeta?")) return;
+    const sistema = todosLosSistemas.find(s => s.id === sysId);
+    if (!sistema) return;
+
+    const nuevosArchivos = [...sistema.archivos];
+    nuevosArchivos.splice(index, 1);
+
+    try {
+        await updateDoc(doc(db, "sistemas", sysId), { archivos: nuevosArchivos });
+    } catch (e) {
+        alert("Error al eliminar.");
+    }
+};
+
+        window.descargarLua = (n, c) => {
+            const blob = new Blob([c], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${n}.lua`; a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.enviarComentario = async (e, id) => {
+            e.preventDefault();
+            const inp = e.target.querySelector('input');
+            if(!inp.value.trim() || !window.currentUser) return;
+            await addDoc(collection(db, "sistemas", id, "comentarios"), {
+                texto: inp.value, autor: window.currentUser.fullName, foto: window.currentUser.imageUrl, fecha: serverTimestamp()
+            });
+            inp.value = '';
+        };
+
+       window.darLike = async (id) => {
+    if (!window.currentUser) return Clerk.openSignIn(); // Primero loguear
+    const sys = todosLosSistemas.find(s => s.id === id);
+
+    // [Personalización aplicada: El creador no puede darse likes a sí mismo]
+    if (sys.creadorId === window.currentUser.id) {
+        return alert("¡No puedes darte like a ti mismo!");
+    }
+
+    const vRef = doc(db, "sistemas", id, "votosUnicos", window.currentUser.id);
+    const votoDoc = await getDoc(vRef);
+
+    try {
+        if (votoDoc.exists()) {
+            // SI YA EXISTE: Quitamos el like (Toggle OFF)
+            await deleteDoc(vRef);
+            await updateDoc(doc(db, "sistemas", id), { 
+                likes: increment(-1) 
+            });
+            console.log("Like quitado");
+        } else {
+            // SI NO EXISTE: Damos el like (Toggle ON)
+            await setDoc(vRef, { v: 1 });
+            await updateDoc(doc(db, "sistemas", id), { 
+                likes: increment(1) 
+            });
+            console.log("Like dado");
+        }
+    } catch (error) {
+        console.error("Error en el sistema de likes:", error);
+    }
+};
+
+// Función para que el Admin ignore (borre) un reporte
+window.ignorarReporte = async (reporteId) => {
+    try {
+        await deleteDoc(doc(db, 'reportes', reporteId));
+        // No hace falta alert, onSnapshot actualizará la lista solo
+    } catch (error) {
+        console.error("Error al eliminar reporte:", error);
+        alert("No se pudo eliminar el reporte.");
+    }
+};
+
+
+        window.reportarSistema = async (id, t) => {
+            const m = prompt(`¿Por qué deseas reportar "${t}"?`);
+            if(!m) return;
+            await addDoc(collection(db, "reportes"), { sistemaId: id, titulo: t, motivo: m, por: window.currentUser.fullName, fecha: serverTimestamp() });
+            alert("🚩 Gracias por el aviso. Lo revisaremos.");
+        };
+
+        window.eliminarSistema = async (id) => { if(confirm("¿Estás seguro de borrar este sistema para siempre?")) await deleteDoc(doc(db, "sistemas", id)); };
+
+        window.agregarCampoArchivo = () => {
+            const div = document.createElement('div');
+            div.className = "archivo-input-item";
+            div.style = "background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 15px; position: relative; border: 1px solid rgba(255,255,255,0.05);";
+            div.innerHTML = `
+                <select class="tipo-selector" style="margin-bottom:15px; border-color:rgba(255,255,255,0.1);"><option value="MODULE">ModuleScript</option><option value="SCRIPT">Script</option><option value="LOCAL">LocalScript</option></select>
+                <input type="text" class="archivo-nombre" placeholder="Nombre del archivo (ej: Loader)" required>
+                <textarea class="archivo-codigo" rows="6" placeholder="Pega aquí tu código de Roblox..." required style="font-family:'Fira Code'; font-size:0.8rem;"></textarea>
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:10px; right:10px; background:#ef4444; border:none; color:white; width:25px; height:25px; border-radius:50%; cursor:pointer; font-weight:bold;">×</button>
+            `;
+            document.getElementById('archivos-input-container').appendChild(div);
+        };
+
+        function cargarPanelAdmin() {
+            document.getElementById('panel-admin').style.display = 'block';
+            onSnapshot(collection(db, "reportes"), (snap) => {
+                document.getElementById('contenedor-reportes').innerHTML = snap.docs.map(d => `
+                    <div style="background:rgba(239, 68, 68, 0.1); padding:15px; margin-bottom:12px; border-radius:12px; border:1px solid rgba(239, 68, 68, 0.2); display:flex; justify-content:space-between; align-items:center;">
+                        <div><b style="color:#ef4444;">${d.data().titulo}</b><p style="margin:5px 0; font-size:0.85rem;">${d.data().motivo}</p></div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="eliminarSistema('${d.data().sistemaId}')" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:bold;">Borrar Sistema</button>
+                          <button onclick="ignorarReporte('${d.id}')" style="background:#475569; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Ignorar</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // Lógica del formulario de envío
+        document.getElementById('form-sistema').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerText = "Publicando..."; btn.disabled = true;
+
+            const archivosItems = document.querySelectorAll('.archivo-input-item');
+            const archivos = Array.from(archivosItems).map(item => ({
+                tipo: item.querySelector('.tipo-selector').value,
+                nombre: item.querySelector('.archivo-nombre').value,
+                codigo: item.querySelector('.archivo-codigo').value
+            }));
+
+            try {
+                await addDoc(collection(db, "sistemas"), {
+                    titulo: document.getElementById('sys-titulo').value,
+                    tag: document.getElementById('sys-tag').value,
+                    archivos: archivos,
+                    autor: window.currentUser.fullName,
+                    creadorId: window.currentUser.id,
+                    foto: window.currentUser.imageUrl,
+                    likes: 0,
+                    fecha: serverTimestamp()
+                });
+                alert("¡Sistema publicado con éxito! 🚀");
+                location.reload();
+            } catch (err) {
+                alert("Error al publicar: " + err.message);
+                btn.innerText = "Publicar"; btn.disabled = false;
             }
         });
 
-        // --- NOTIFICACIONES ---
-        function escucharNotificaciones() {
-            const q = query(notifRef, where("para", "==", autorLogueado), orderBy("fecha", "desc"));
-            onSnapshot(q, (snap) => {
-                const count = document.getElementById('notif-count');
-                const lista = document.getElementById('lista-notificaciones');
-                let unread = 0;
-                
-                if (snap.empty) {
-                    lista.innerHTML = "<div style='padding:20px; text-align:center;'>No hay nada nuevo</div>";
-                    count.style.display = "none";
-                    return;
-                }
-
-                lista.innerHTML = snap.docs.map(d => {
-                    const n = d.data();
-                    if (!n.leida) unread++;
-                    return `<div style="padding:12px; border-bottom:1px solid #334155; ${!n.leida ? 'background:#38bdf80a; border-left:3px solid var(--accent);' : ''}">
-                        ${n.texto}<br><small style="opacity:0.5">${new Date(n.fecha).toLocaleTimeString()}</small>
-                    </div>`;
-                }).join('');
-
-                count.innerText = unread;
-                count.style.display = unread > 0 ? "block" : "none";
+        // Buscador dinámico
+        document.getElementById('buscador-input').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.sistema-container');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(term) ? 'block' : 'none';
             });
-        }
-
-        document.getElementById('btn-limpiar-notifs').onclick = async () => {
-            const q = query(notifRef, where("para", "==", autorLogueado), where("leida", "==", false));
-            const snap = await getDocs(q);
-            const batch = writeBatch(db);
-            snap.forEach(d => batch.update(d.ref, { leida: true }));
-            await batch.commit();
-        };
-
-        document.getElementById('btn-campana').onclick = (e) => {
-            e.stopPropagation();
-            const panel = document.getElementById('panel-notificaciones');
-            panel.style.display = panel.style.display === "none" ? "block" : "none";
-        };
-
-        // --- LÓGICA DE SCRIPTS ---
-        document.getElementById('btn-agregar-archivo').onclick = () => {
-            const n = document.getElementById('temp-nombre').value;
-            const t = document.getElementById('temp-tipo').value;
-            const c = document.getElementById('temp-codigo').value;
-            if (!n || !c) return alert("Nombre y Código obligatorios");
-            archivosTemporales.push({ nombre: n, tipo: t, codigo: c });
-            document.getElementById('temp-nombre').value = "";
-            document.getElementById('temp-codigo').value = "";
-            actualizarPrevia();
-        };
-
-        function actualizarPrevia() {
-            const cont = document.getElementById('lista-archivos-previa');
-            cont.innerHTML = archivosTemporales.map((f, i) => `
-                <span style="background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin:2px;">
-                    ${f.nombre}.lua <span onclick="window.borrarTemp(${i})" style="cursor:pointer; margin-left:5px;">×</span>
-                </span>`).join('');
-            document.getElementById('btn-publicar-todo').style.display = archivosTemporales.length > 0 ? "block" : "none";
-        }
-
-        window.borrarTemp = (i) => { archivosTemporales.splice(i, 1); actualizarPrevia(); };
-
-        document.getElementById('form-proyecto').onsubmit = async (e) => {
-            e.preventDefault();
-            if (autorLogueado === "Invitado") return alert("Inicia sesión primero");
-            const btn = document.getElementById('btn-publicar-todo');
-            btn.disabled = true;
-            await addDoc(scriptsRef, {
-                autor: autorLogueado,
-                nombreSistema: document.getElementById('nombre-sistema').value,
-                clave: document.getElementById('clave-eliminar').value,
-                archivos: archivosTemporales,
-                likes: 0,
-                comentarios: [],
-                fecha: Date.now()
-            });
-            archivosTemporales = [];
-            actualizarPrevia();
-            e.target.reset();
-            inputAutor.value = autorLogueado;
-            btn.disabled = false;
-            alert("¡Publicado!");
-        };
-
-        onSnapshot(query(scriptsRef, orderBy("fecha", "desc")), (snap) => {
-            todosLosProyectos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderizar(todosLosProyectos);
         });
-
-        function renderizar(proyectos) {
-            const cont = document.getElementById('contenedor-scripts');
-            cont.innerHTML = proyectos.map(p => {
-                const id = p.id;
-                const files = p.archivos.map((f, i) => `
-                    <div style="background:#0f172a; margin-bottom:5px; border-radius:4px; border:1px solid #1e293b;">
-                        <div onclick="window.toggleCode('${id}-${i}')" style="padding:8px 12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
-                            <span>📄 <strong>${f.tipo}</strong> ${f.nombre}</span>
-                            <button onclick="event.stopPropagation(); window.copy('${id}-${i}')" style="background:var(--accent); border:none; border-radius:3px; padding:2px 6px; font-size:0.6rem; cursor:pointer;">Copiar</button>
-                        </div>
-                        <pre id="code-${id}-${i}" style="display:none; margin:0; font-size:0.75rem;"><code class="language-lua">${f.codigo}</code></pre>
-                    </div>`).join('');
-                return `<div class="folder-block" style="background:#1e293b; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #334155;">
-                    <h3 style="color:var(--accent); margin:0;">📂 ${p.nombreSistema}</h3>
-                    <small>Por ${p.autor}</small>
-                    <div style="margin-top:10px;">${files}</div>
-                </div>`;
-            }).join('');
-            if(window.Prism) Prism.highlightAll();
+        // Función para actualizar números de línea en tiempo real
+document.addEventListener('input', (e) => {
+    if (e.target.getAttribute('contenteditable') === 'true' && e.target.id.startsWith('edit-')) {
+        const idFull = e.target.id.replace('edit-', ''); // Obtenemos el ID del sistema y el índice
+        const lineNumbersDiv = e.target.closest('.editor-container').querySelector('.line-numbers');
+        
+        // Contamos las líneas actuales basándonos en el texto
+        const lineCount = e.target.innerText.split('\n').length;
+        
+        // Generamos los números nuevos
+        let numbersHTML = "";
+        for (let i = 1; i <= lineCount; i++) {
+            numbersHTML += i + "<br>";
         }
-
-        window.toggleCode = (id) => {
-            const el = document.getElementById(`code-${id}`);
-            el.style.display = el.style.display === "none" ? "block" : "none";
-        };
-        window.copy = (id) => {
-            navigator.clipboard.writeText(document.getElementById(`code-${id}`).innerText);
-            alert("Copiado");
-        };
+        
+        lineNumbersDiv.innerHTML = numbersHTML;
+    }
+});
     </script>
 </body>
 </html>
-
