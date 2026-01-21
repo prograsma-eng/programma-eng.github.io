@@ -260,7 +260,7 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
 
     const htmlFinal = lista.map(sys => {
         if (idPerfilUrl && sys.creadorId !== idPerfilUrl) return ''; 
-
+        const tituloSeguro = sys.titulo.replace(/'/g, "\\'");
         const esDueno = window.currentUser && 
                         String(sys.creadorId).trim() === String(window.currentUser.id).trim();
         const yaLoSigo = misSiguiendo.includes(sys.creadorId);
@@ -334,7 +334,7 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                 <div class="acciones-box">
                     ${esDueno ? `<button onclick="window.toggleModoEditor('${sys.id}')">${window.editandoId === sys.id ? '✅' : '✏️'}</button>` : ''}
                     <button onclick="window.compartirSistemaIndividual('${sys.id}', '${sys.creadorId}')" title="Copiar enlace al sistema">🔗</button>
-                    <button onclick="window.reportarSistema('${sys.id}', '${sys.titulo}')">🚩</button>
+                    <button onclick="window.reportarSistema('${sys.id}', '${tituloSeguro}')">🚩</button>
                     ${esDueno ? `<button onclick="window.eliminarSistema('${sys.id}')">🗑️</button>` : ''}
                     <button class="btn-like" 
                         onclick="${esDueno ? "alert('No puedes dar like a tu propio sistema')" : `window.darLike('${sys.id}')`}" 
@@ -460,4 +460,5 @@ window.eliminarScript = async (sysId, indiceScript) => {
         console.error("Error al eliminar script:", error);
         alert("No se pudo eliminar el script.");
     }
+
 };
