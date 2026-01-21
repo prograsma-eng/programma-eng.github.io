@@ -175,6 +175,24 @@ header {
     min-width: 40px !important;
     overflow: hidden !important;
 }
+#user-button {
+    display: flex;
+    align-items: center;
+    margin-left: 5px;
+}
+.welcome-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px); /* El efecto borroso */
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
 
 /* Oculta labels, nombres y botones de texto sobrantes */
 .cl-userButtonTriggerName,
@@ -191,19 +209,6 @@ header {
 }
 
 /* Asegura que el contenedor del avatar sea circular y limpio */
-.cl-userButtonAvatarBox {
-    width: 38px !important;
-    height: 38px !important;
-    border-radius: 50% !important;
-}
-
-/* Alineación del encabezado del sistema */
-.sistema-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

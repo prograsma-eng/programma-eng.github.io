@@ -1,16 +1,31 @@
 import { 
     db, doc, getDoc, setDoc, updateDoc, increment, arrayUnion, 
     arrayRemove, collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, getDocs, deleteDoc,
-} from '../firebase-config.js';
-import { conectarContadorSeguidores } from '../firebase-config.js';
+    conectarContadorSeguidores , getAuth}
+  from '../firebase-config.js';
 
 // --- SISTEMA DE SEGUIMIENTO ---
-export const toggleSeguir = async (creadorId) => { 
-    const user = window.currentUser || (window.Clerk && window.Clerk.user);
-    if (!user) return alert("Debes iniciar sesión");
+const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID real de Clerk
+// --- ABRIR/CERRAR EL DROPDOWN ---
+window.toggleNotificaciones = () => {
+    const dropdown = document.getElementById('noti-dropdown');
+    if (!dropdown) return;
     
+    // Alternamos la visibilidad
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+};
+// --- SISTEMA DE SEGUIMIENTO (Optimizado para Clerk) ---
+export const toggleSeguir = async (creadorId) => { 
+    // Usamos Clerk directamente como fuente de verdad
+    const user = window.Clerk?.user;
+    if (!user) return alert("Debes iniciar sesión para seguir a otros.");
+
     if (user.id === creadorId) {
-        return alert("Eres el creador de este espacio, no puedes seguirte a ti mismo.");
+        return alert("¡Eres el creador! No puedes seguirte a ti mismo.");
     }
 
     const miUserRef = doc(db, "usuarios", user.id);
@@ -20,11 +35,11 @@ export const toggleSeguir = async (creadorId) => {
         const miDoc = await getDoc(miUserRef);
         let siguiendoAhora = false;
 
-        // 1. Lógica para el seguidor (Tú)
         if (!miDoc.exists()) {
+            // Si no existe, lo creamos con el nuevo seguidor
             await setDoc(miUserRef, {
                 id: user.id,
-                nombre: user.fullName || "Usuario Anónimo",
+                nombre: user.fullName || "Usuario",
                 foto: user.imageUrl || "",
                 siguiendo: [creadorId],
                 seguidoresCount: 0,
@@ -34,48 +49,20 @@ export const toggleSeguir = async (creadorId) => {
         } else {
             const siguiendo = miDoc.data().siguiendo || [];
             if (siguiendo.includes(creadorId)) {
-                // arrayRemove es atómico, no falla si haces clics rápidos
                 await updateDoc(miUserRef, { siguiendo: arrayRemove(creadorId) });
                 siguiendoAhora = false;
             } else {
-                // arrayUnion evita duplicados automáticamente
                 await updateDoc(miUserRef, { siguiendo: arrayUnion(creadorId) });
                 siguiendoAhora = true;
             }
         }
 
-        // 2. Sincronizar variable global y avisar al Perfil
-        if (!window.misSiguiendoGlobal) window.misSiguiendoGlobal = [];
-        if (siguiendoAhora) {
-            if (!window.misSiguiendoGlobal.includes(creadorId)) window.misSiguiendoGlobal.push(creadorId);
-        } else {
-            window.misSiguiendoGlobal = window.misSiguiendoGlobal.filter(id => id !== creadorId);
-        }
+        // Actualizamos contador del creador
+        await updateDoc(creadorRef, { 
+            seguidoresCount: increment(siguiendoAhora ? 1 : -1) 
+        });
 
-        if (typeof window.renderizarBotonSeguir === "function") {
-            window.renderizarBotonSeguir(siguiendoAhora);
-        }
-
-        // 3. Lógica para el creador (Seguido) - AQUÍ ESTABA EL ERROR DE CONTEO
-        const creadorDoc = await getDoc(creadorRef);
-        if (!creadorDoc.exists()) {
-            await setDoc(creadorRef, {
-                id: creadorId,
-                nombre: "Usuario del Sistema", 
-                foto: "",
-                seguidoresCount: siguiendoAhora ? 1 : 0,
-                siguiendo: [],
-                favoritos: []
-            });
-        } else {
-            // USAMOS increment(): Es la forma segura de sumar/restar en Firebase
-            // Esto evita que el número salte o se vuelva negativo por clics rápidos
-            await updateDoc(creadorRef, { 
-                seguidoresCount: increment(siguiendoAhora ? 1 : -1) 
-            });
-        }
-
-        // 4. Notificación
+        // Notificación (Solo si empezamos a seguir)
         if (siguiendoAhora) {
             await addDoc(collection(db, "notificaciones"), {
                 paraId: creadorId,
@@ -90,27 +77,14 @@ export const toggleSeguir = async (creadorId) => {
         if (typeof window.renderizar === "function") window.renderizar();
 
     } catch (e) {
-        console.error("Error al seguir:", e);
-    }
-};
-const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID real de Clerk
-// --- ABRIR/CERRAR EL DROPDOWN ---
-window.toggleNotificaciones = () => {
-    const dropdown = document.getElementById('noti-dropdown');
-    if (!dropdown) return;
-    
-    // Alternamos la visibilidad
-    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
-        dropdown.style.display = 'block';
-    } else {
-        dropdown.style.display = 'none';
+        console.error("Error en toggleSeguir:", e);
     }
 };
 
-// --- ESCUCHA DE ACTIVIDAD (Firestore) ---
+// --- ESCUCHA DE NOTIFICACIONES (Sin Errores en Consola) ---
 window.rastrearActividad = () => {
-    const user = window.currentUser || (window.Clerk && window.Clerk.user);
-    if (!user) return;
+    const user = window.Clerk?.user;
+    if (!user) return; // Si no hay usuario, no activamos el listener de Firebase
 
     const q = query(
         collection(db, "notificaciones"),
@@ -118,43 +92,31 @@ window.rastrearActividad = () => {
         orderBy("fecha", "desc")
     );
 
-    // Añadimos el manejador de error al final
-    onSnapshot(q, 
-        (snap) => {
-            const listaNotis = document.getElementById('lista-notificaciones');
-            const countBadge = document.getElementById('noti-count');
-            
-            if (!listaNotis) return;
+    onSnapshot(q, (snap) => {
+        const listaNotis = document.getElementById('lista-notificaciones');
+        const countBadge = document.getElementById('noti-count');
+        if (!listaNotis) return;
 
-            const total = snap.size;
-            if (countBadge) {
-                countBadge.innerText = total;
-                countBadge.style.display = total > 0 ? 'flex' : 'none';
-            }
+        const total = snap.size;
+        if (countBadge) {
+            countBadge.innerText = total;
+            countBadge.style.display = total > 0 ? 'flex' : 'none';
+        }
 
-            if (snap.empty) {
-                listaNotis.innerHTML = '<p style="padding:15px; color:#888; text-align:center; font-size:0.8rem;">No tienes notificaciones nuevas</p>';
-                return;
-            }
-
-            listaNotis.innerHTML = snap.docs.map(d => {
+        listaNotis.innerHTML = snap.empty 
+            ? '<p style="padding:15px; color:#888; text-align:center;">Sin notificaciones</p>'
+            : snap.docs.map(d => {
                 const n = d.data();
                 return `
-                    <div class="noti-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #222;">
-                        <div style="font-size:0.8rem;">
-                            <p style="margin:0; color:#eee;"><b>${n.titulo || 'Aviso'}</b></p>
-                            <p style="margin:0; color:#ccc;">${n.mensaje}</p>
-                        </div>
-                        <button onclick="window.eliminarNotificacion('${d.id}')" style="background:none; border:none; color:#555; cursor:pointer;">&times;</button>
-                    </div>
-                `;
+                    <div class="noti-item">
+                        <span><b>${n.nombreEmisor || 'Usuario'}</b> ${n.mensaje}</span>
+                        <button onclick="window.eliminarNotificacion('${d.id}')">&times;</button>
+                    </div>`;
             }).join('');
-        },
-        (error) => {
-            // Silenciamos el error rojo
-            console.log("Notificaciones: Sincronizando sesión...");
-        }
-    );
+    }, (error) => {
+        // Silenciamos el error de permisos si Firebase aún no conecta el auth
+        console.log("Sincronizando notificaciones...");
+    });
 };
 window.resolverReporte = async (reporteId, sistemaId) => {
     if (window.currentUser?.id !== MI_ADMIN_ID) {

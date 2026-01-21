@@ -1,3 +1,8 @@
+setInterval(() => {
+    console.clear();
+    console.log("%c¡ALTO!", "color: red; font-size: 50px; font-weight: bold; -webkit-text-stroke: 1px black;");
+    console.log("%cSi alguien te dijo que pegues algo aquí para hackear, te están robando la cuenta.", "font-size: 20px;");
+}, 1000);
 /// Importa las funciones para que el script de inicialización las detecte
 import { toggleSeguir} from './modules/social-logic.js'; // Ajusta la ruta si es necesario
 import { escucharComentarios } from './modules/comments-logic.js'; // Ajusta la ruta
@@ -153,17 +158,37 @@ scriptClerk.onload = async () => {
             window.currentUser = Clerk.user;
             window.AppStatus.clerkReady = true;
 
-            // MONTAJE DEL BOTÓN DE USUARIO (Con redirección corregida para XAMPP)
-            const userButtonDiv = document.getElementById('user-button');
-            if (userButtonDiv) {
-                Clerk.mountUserButton(document.getElementById('user-button'), {
-                    // Esto asegura que al cerrar sesión te deje en la misma carpeta
-                    afterSignOutUrl: window.location.origin + window.location.pathname
-                });
-                 renderizar();
+            console.log("⏳ Intentando sincronizar Clerk -> Firebase...");
+            
+            // --- 1. SINCRONIZACIÓN ÚNICA ---
+            try {
+                const token = await Clerk.session.getToken({ template: 'firebase' }); 
+                
+                if (token) {
+                    // Importamos y conectamos de una sola vez
+                    const { getAuth, signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    const auth = getAuth();
+                    
+                    // Intentamos login. Si falla por App Check, el catch lo maneja.
+                    await signInWithCustomToken(auth, token).then(() => {
+                        console.log("🔥 ¡SISTEMA BLINDADO! Conectado como:", auth.currentUser.uid);
+                    }).catch(fbError => {
+                        console.warn("⚠️ Firebase rechazó el token (App Check), usando sesión local.");
+                    });
+                }
+            } catch (authError) {
+                console.error("❌ Error en la generación del token:", authError);
             }
 
-            // Sincronización con Firebase (Favoritos y Seguidores)
+            // --- 2. MONTAR BOTÓN DE USUARIO ---
+            const userButtonDiv = document.getElementById('user-button');
+            if (userButtonDiv) {
+                Clerk.mountUserButton(userButtonDiv, {
+                    afterSignOutUrl: window.location.origin + window.location.pathname
+                });
+            }
+
+            // --- 3. SINCRONIZACIÓN DE PERFIL ---
             const usuarioRef = doc(db, "usuarios", Clerk.user.id);
             onSnapshot(usuarioRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -172,38 +197,43 @@ scriptClerk.onload = async () => {
                     window.misSiguiendoGlobal = data.siguiendo || [];
                     if (typeof renderizar === "function") renderizar(); 
                 }
-            }, (err) => console.log("Sincronizando perfil..."));
+            }, (err) => {
+                // Este error es normal si las reglas de Firebase aún no están listas
+                console.log("ℹ️ Perfil: Esperando validación de Firebase...");
+            });
 
-            // Verificar Admin
-            if (Clerk.user.id === MI_ADMIN_ID && typeof window.cargarPanelAdmin === "function") {
-                window.cargarPanelAdmin();
+            // --- 4. CARGAR PANEL DE ADMIN ---
+            if (Clerk.user.id === MI_ADMIN_ID) {
+                console.log("👑 Admin detectado. Cargando panel...");
+                setTimeout(() => {
+                    if (typeof window.cargarPanelAdmin === "function") {
+                        window.cargarPanelAdmin();
+                    }
+                }, 1000); 
             }
 
-            // Registrar actividad
             if (window.verificarYRegistrarPerfil) window.verificarYRegistrarPerfil();
             if (window.rastrearActividad) window.rastrearActividad();
 
         } else {
-            // USUARIO INVITADO
+            // --- LÓGICA USUARIO INVITADO ---
             window.currentUser = null;
             const userBtnDiv = document.getElementById('user-button');
             if (userBtnDiv) {
                 userBtnDiv.innerHTML = `<button onclick="window.iniciarSesionPersonalizada()" class="btn-publish">Iniciar Sesión</button>`;
             }
-            renderizar();
             window.misFavoritosGlobal = [];
             window.misSiguiendoGlobal = [];
+            if (typeof renderizar === "function") renderizar(window.todosLosSistemas);
         }
 
-        // Inicializar UI General
-        iniciarEscuchaSistemas();
+        if (typeof iniciarEscuchaSistemas === "function") iniciarEscuchaSistemas();
         if (window.inicializarFiltros) window.inicializarFiltros();
 
     } catch (err) {
-        console.error("❌ Error en Clerk:", err);
+        console.error("❌ Error crítico en Clerk:", err);
     } 
 };
-
 // --- MODIFICACIÓN EN ESCUCHA DE SISTEMAS ---
 function iniciarEscuchaSistemas() {
     if (!contenedorSistemas) return;
@@ -400,3 +430,7 @@ window.iniciarSesionPersonalizada = () => {
         });
     }
 };
+// Añade esto al principio de tu app.js o en un <script> en tu HTML
+
+// Desactivar el clic derecho (opcional)
+document.addEventListener('contextmenu', event => event.preventDefault());

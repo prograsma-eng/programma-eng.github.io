@@ -256,26 +256,6 @@ header {
     align-items: center;
 }
 
-/* Ajuste para que el User Button de Clerk no se vea gigante */
-#user-button {
-    display: flex;
-    align-items: center;
-    margin-left: 5px;
-}
-.welcome-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px); /* El efecto borroso */
-    display: none; /* Oculto por defecto */
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
 /* Cuando se activa con JS */
 .welcome-overlay.show {
     display: flex;
@@ -376,4 +356,42 @@ header {
 
 .noti-item:hover {
     background: rgba(255, 255, 255, 0.05);
+}
+
+.cl-userButtonAvatarBox {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+}
+
+/* Alineación del encabezado del sistema */
+.sistema-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+#user-button {
+    width: 32px; /* Tamaño estándar del avatar de Clerk */
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Evita que el botón de login sea gigante si el usuario no está logueado */
+#user-button button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+.noti-badge.urgent {
+    background-color: #ff4444;
+    box-shadow: 0 0 10px #ff4444;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }

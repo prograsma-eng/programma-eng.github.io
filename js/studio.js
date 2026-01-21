@@ -414,43 +414,6 @@ window.darLike = async (id) => {
         console.error("Error al dar like:", e);
     }
 };
-
-// --- FUNCIÓN SEGUIR/DEJAR DE SEGUIR ---
-window.toggleSeguir = async (creadorId) => {
-    if (!window.currentUser || window.currentUser.id === creadorId) return;
-
-    const miUserRef = doc(db, "usuarios", window.currentUser.id);
-    const creadorRef = doc(db, "usuarios", creadorId);
-
-    try {
-        const miDoc = await getDoc(miUserRef);
-        const siguiendo = miDoc.exists() ? (miDoc.data().siguiendo || []) : [];
-        const yaSigo = siguiendo.includes(creadorId);
-
-        // Actualizar mi lista de siguiendo
-        await updateDoc(miUserRef, {
-            siguiendo: yaSigo ? arrayRemove(creadorId) : arrayUnion(creadorId)
-        });
-
-        // Actualizar contador del creador
-        await updateDoc(creadorRef, {
-            seguidoresCount: increment(yaSigo ? -1 : 1)
-        });
-
-        // Si es un nuevo seguimiento, enviar notificación
-        if (!yaSigo) {
-            await addDoc(collection(db, "notificaciones"), {
-                paraId: creadorId,
-                titulo: "Nuevo seguidor",
-                mensaje: `${window.currentUser.fullName} te ha seguido`,
-                fecha: serverTimestamp()
-            });
-        }
-    } catch (e) {
-        console.error("Error en toggleSeguir:", e);
-    }
-};
-
 // --- FUNCIÓN COMENTAR ---
 window.enviarComentario = async (event, sistemaId) => {
     event.preventDefault();

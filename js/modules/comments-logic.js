@@ -9,9 +9,22 @@ const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID r
 window.enviarComentario = async (e, id) => {
     e.preventDefault();
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
+    const inp = e.target.querySelector('input');
+    const texto = inp.value.trim();
+
+    // --- NUEVO LÍMITE DE PALABRAS ---
+    const LIMITE_PALABRAS = 50; 
+    const palabras = texto.split(/\s+/).filter(p => p.length > 0);
+
+    if (palabras.length > LIMITE_PALABRAS) {
+        return alert(`⚠️ Tu comentario es muy largo. Máximo ${LIMITE_PALABRAS} palabras.`);
+    }
+    // --------------------------------
+
+    if(!texto || !user) return;
+    e.preventDefault();
     const sistemas = window.todosLosSistemas || [];
     
-    const inp = e.target.querySelector('input');
     if(!inp.value.trim() || !user) return;
     
     const sistema = sistemas.find(s => s.id === id);
@@ -231,27 +244,29 @@ export const escucharComentarios = (sistemaId) => {
 
             if (!cDiv) return;
 
-            cDiv.innerHTML = snap.docs.map(d => {
-                const comData = d.data();
-                const comId = d.id;
-                const esMioCom = user && (comData.autorId === user.id || user.id === MI_ADMIN_ID);
-                
-                return `
-                    <div class="comentario-item" style="border-bottom: 1px solid #222; padding: 10px 0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <img src="${comData.foto || 'https://via.placeholder.com/20'}" style="width:20px; height:20px; border-radius:50%;">
-                                <b style="color:var(--accent); font-size:0.75rem;">${comData.autor} ${comData.autorId === MI_ADMIN_ID ? '⭐' : ''}</b>
-                            </div>
-                            ${esMioCom ? `<button onclick="window.borrarComentario('${sistemaId}', '${comId}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">🗑️</button>` : ''}
-                        </div>
-                        <p style="margin:5px 0; font-size:0.85rem; color:#eee;">${comData.texto}</p>
-                        <div style="display:flex; gap:15px; font-size:0.7rem; color:#888;">
-                            <span onclick="window.likeComentario('${sistemaId}', '${comId}')" style="cursor:pointer;">❤️ ${comData.likes?.length || 0}</span>
-                            <span onclick="window.mostrarInputRespuesta('${sistemaId}', '${comId}', '${comData.autor}')" style="cursor:pointer; color:var(--accent); font-weight:bold;">Responder</span>
-                        </div>
-                    </div>`;
-            }).join('');
+           cDiv.innerHTML = snap.docs.map(d => {
+    const comData = d.data();
+    const comId = d.id;
+    const esMioCom = user && (comData.autorId === user.id || user.id === MI_ADMIN_ID);
+    
+    return `
+        <div class="comentario-item" style="border-bottom: 1px solid #222; padding: 10px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <img src="${escaparHTML(comData.foto) || 'https://via.placeholder.com/20'}" style="width:20px; height:20px; border-radius:50%;">
+                    <b style="color:var(--accent); font-size:0.75rem;">
+                        ${escaparHTML(comData.autor)} ${comData.autorId === MI_ADMIN_ID ? '⭐' : ''}
+                    </b>
+                </div>
+                ${esMioCom ? `<button onclick="window.borrarComentario('${sistemaId}', '${comId}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">🗑️</button>` : ''}
+            </div>
+            <p style="margin:5px 0; font-size:0.85rem; color:#eee;">${escaparHTML(comData.texto)}</p>
+            <div style="display:flex; gap:15px; font-size:0.7rem; color:#888;">
+                <span onclick="window.likeComentario('${sistemaId}', '${comId}')" style="cursor:pointer;">❤️ ${comData.likes?.length || 0}</span>
+                <span onclick="window.mostrarInputRespuesta('${sistemaId}', '${comId}', '${escaparHTML(comData.autor)}')" style="cursor:pointer; color:var(--accent); font-weight:bold;">Responder</span>
+            </div>
+        </div>`;
+}).join('');
         },
         (error) => {
             // Este log es silencioso y no aparece en rojo como error fatal
@@ -262,3 +277,9 @@ export const escucharComentarios = (sistemaId) => {
 
 // Asegúrate de que window también use la versión corregida
 window.escucharComentarios = escucharComentarios;
+function escaparHTML(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+}

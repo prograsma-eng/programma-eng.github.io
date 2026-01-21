@@ -16,7 +16,7 @@ import {
     where,
     arrayUnion,
     arrayRemove,
-    getDocs
+    getDocs,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = { 
@@ -75,7 +75,8 @@ export {
     where,
     arrayUnion,
     arrayRemove,
-    getDocs
+    getDocs,
+    getAuth
 };
 
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";

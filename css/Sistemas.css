@@ -41,10 +41,12 @@
     margin-bottom: 12px;
 }
 
-.autor-box {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+.autor-box span {
+    display: inline-block;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .comentario-avatar {
@@ -60,7 +62,19 @@
     font-size: 1.1rem;
     color: #fff;
     margin: 0;
-    outline: none; /* Quita el borde al editar */
+    outline: none;
+    
+    /* --- AQUÍ EL BLINDAJE --- */
+    max-width: 300px; /* Limita el ancho del texto */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Pone "..." al final */
+}
+
+h2 {
+     white-space: nowrap;
+     overflow: hidden;
+      text-overflow: ellipsis;
 }
 
 /* --- ETIQUETAS Y TEXTOS --- */
@@ -340,4 +354,8 @@ span[id^="count-seguidores-"] {
 .btn-accion.activo {
     color: #ffca28 !important; /* Amarillo/Dorado */
     transform: scale(1.2);
+}
+.archivo-header span {
+    word-break: break-all; /* Rompe la palabra si es muy larga */
+    max-width: 200px;
 }

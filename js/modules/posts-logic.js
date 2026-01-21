@@ -250,7 +250,24 @@ window.aplicarEnfoqueSistema = function() {
         }
     }
 };
+function escaparHTML(str) {
+    if (!str) return "";
 
+    // 1. Detectar si contiene caracteres de inyección (< >)
+    // El patrón /<[^>]*>/ busca cualquier cosa que parezca una etiqueta HTML
+    if (/[<>]/.test(str)) {
+        return nul; // Detenemos el proceso devolviendo null
+    }
+
+    // 2. Si pasa la validación, escapamos el resto de caracteres por seguridad
+    return str.replace(/[&"']/g, function(m) {
+        return {
+            '&': '&amp;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[m];
+    });
+}
 // --- FUNCIÓN DE GENERACIÓN DE HTML ---
 export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostrarSeguidores = true) {
     if (!lista || lista.length === 0) return `<p class='text-center text-muted'>No se encontraron sistemas.</p>`;
@@ -273,20 +290,20 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                 <div class="archivo-header" onclick="window.toggleArchivo('${sys.id}-${i}')">
                     <span>
                         <span class="tag-badge ${tipoClase}">
-                            ${arc.tipo === 'Script' ? '🟩' : arc.tipo === 'LocalScript' ? '🟦' : '🟪'} ${arc.tipo}
+                            ${arc.tipo === 'Script' ? '🟩' : arc.tipo === 'LocalScript' ? '🟦' : '🟪'} ${escaparHTML(arc.tipo)}
                         </span>
-                        <b class="font-code">${arc.nombre}.lua</b>
+                        <b class="font-code">${escaparHTML(arc.nombre)}.lua</b>
                     </span>
                     <div class="flex-row">
-                        <button class="btn-copy" onclick="event.stopPropagation(); window.copiarCodigo('${sys.id}-${i}')">📋</button>
+                        <button class="btn-copy" onclick="event.stopPropagation(); window.copiarCodigo('${escaparHTML(sys.id)}-${i}')">📋</button>
                         ${window.editandoId === sys.id ? `
-                            <button onclick="event.stopPropagation(); window.guardarEdicion('${sys.id}', ${i})">💾</button>
-                            <button onclick="event.stopPropagation(); window.eliminarScript('${sys.id}', ${i})" class="text-danger">✕</button>
+                            <button onclick="event.stopPropagation(); window.guardarEdicion('${escaparHTML(sys.id)}', ${i})">💾</button>
+                            <button onclick="event.stopPropagation(); window.eliminarScript('${escaparHTML(sys.id)}', ${i})" class="text-danger">✕</button>
                         ` : ''}
                     </div>
                 </div>
                 <div class="codigo-wrapper" id="wrap-${sys.id}-${i}" style="display: none;">
-                    <pre class="language-lua"><code id="edit-${sys.id}-${i}" contenteditable="${window.editandoId === sys.id}">${arc.codigo}</code></pre>
+                    <pre class="language-lua"><code id="edit-${sys.id}-${i}" contenteditable="${window.editandoId === sys.id}">${escaparHTML(arc.codigo)}</code></pre>
                 </div>
             </div>`;
         }).join('');
@@ -295,8 +312,8 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
         <div class="sistema-container ${window.editandoId === sys.id ? 'editando' : ''}" id="sistema-${sys.id}">
             <div class="sistema-header">
                 <div class="autor-box">
-                    <img src="${sys.foto}" class="comentario-avatar" 
-                         onclick="window.location.href='perfil.html?id=${sys.creadorId}'" 
+                    <img src="${escaparHTML(sys.foto)}" class="comentario-avatar" 
+                         onclick="window.location.href='perfil.html?id=${escaparHTML(sys.creadorId)}'" 
                          style="cursor:pointer;">
                     <div>
                         <div class="flex-row">
@@ -304,25 +321,23 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                             id="title-${sys.id}" 
                             contenteditable="${window.editandoId === sys.id}" 
                             onblur="window.guardarTitulo('${sys.id}')"
-                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }"
-                            style="outline: none;"
-                        >
-                            ${sys.titulo}
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">
+                            ${escaparHTML(sys.titulo)}
                         </h2>
-                            <span class="tag-badge">#${sys.tag}</span>
+                            <span class="tag-badge">#${escaparHTML(sys.tag)}</span>
                         </div>
                         <div class="flex-row">
                             <p class="text-dim">Por 
-                                <span class="text-accent" onclick="window.location.href='perfil.html?id=${sys.creadorId}'" style="cursor:pointer; font-weight:bold;">
-                                    ${sys.autor}
+                                <span class="text-accent" onclick="window.location.href='perfil.html?id=${escaparHTML(sys.creadorId)}'" style="cursor:pointer; font-weight:bold;">
+                                    ${escaparHTML(sys.autor)}
                                 </span> 
                                 ${mostrarSeguidores ? `
                                     <span class="seguidores-badge">
-                                        👤 <span id="count-seguidores-${sys.creadorId}">0</span>
+                                        👤 <span id="count-seguidores-${escaparHTML(sys.creadorId)}">0</span>
                                     </span>
                                 ` : ''}
                                 ${(!esDueno && mostrarSeguidores) ? `
-                                    <button onclick="window.toggleSeguir('${sys.creadorId}')" 
+                                    <button onclick="window.toggleSeguir('${escaparHTML(sys.creadorId)}')" 
                                         class="btn-seguir ${yaLoSigo ? 'siguiendo' : 'no-siguiendo'}">
                                         ${yaLoSigo ? '❌ Dejar de seguir' : '🔔 Seguir'}
                                     </button>
@@ -333,8 +348,8 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                 </div>
                 <div class="acciones-box">
                     ${esDueno ? `<button onclick="window.toggleModoEditor('${sys.id}')">${window.editandoId === sys.id ? '✅' : '✏️'}</button>` : ''}
-                    <button onclick="window.compartirSistemaIndividual('${sys.id}', '${sys.creadorId}')" title="Copiar enlace al sistema">🔗</button>
-                    <button onclick="window.reportarSistema('${sys.id}', '${tituloSeguro}')">🚩</button>
+                    <button onclick="window.compartirSistemaIndividual('${sys.id}', '${escaparHTML(sys.creadorId)}')" title="Copiar enlace al sistema">🔗</button>
+                    <button onclick="window.reportarSistema('${sys.id}', '${escaparHTML(tituloSeguro)}')">🚩</button>
                     ${esDueno ? `<button onclick="window.eliminarSistema('${sys.id}')">🗑️</button>` : ''}
                     <button class="btn-like" 
                         onclick="${esDueno ? "alert('No puedes dar like a tu propio sistema')" : `window.darLike('${sys.id}')`}" 
@@ -460,5 +475,4 @@ window.eliminarScript = async (sysId, indiceScript) => {
         console.error("Error al eliminar script:", error);
         alert("No se pudo eliminar el script.");
     }
-
 };

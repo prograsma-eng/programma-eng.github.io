@@ -108,7 +108,7 @@ export function configurarFormulario() {
                 btn.disabled = false;
             }
         });
-    }
+}
 
 // Exportamos también la función de bienvenida por si la necesitas en app.js
 export { lanzarBienvenida, registrarUsuarioEnBaseDeDatos };
