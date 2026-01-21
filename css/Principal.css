@@ -1,0 +1,379 @@
+/* =========================================
+   1. VARIABLES Y CONFIGURACIÓN BASE
+   ========================================= */
+:root {
+    --bg-main: #060910;
+    --bg-card: #0f172a;
+    --bg-card-hover: #1e293b;
+    --bg-code: #010409;
+    --accent: #00d4ff;
+    --accent-glow: rgba(0, 212, 255, 0.3);
+    --text-bright: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-main);
+    background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-main) 80%);
+    color: var(--text-bright);
+    overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* =========================================
+   2. HEADER Y NOTIFICACIONES
+   ========================================= */
+header {
+    background: rgba(6, 9, 16, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky; top: 0; z-index: 1000;
+}
+
+.header-container {
+    max-width: 1200px; margin: 0 auto; padding: 12px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.noti-icon {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px; border-radius: 12px; cursor: pointer; position: relative;
+}
+
+.noti-badge {
+    position: absolute; top: -5px; right: -5px;
+    background: var(--danger); color: white; font-size: 0.7rem;
+    padding: 2px 6px; border-radius: 50%; font-weight: bold;
+}
+
+.noti-content {
+    position: absolute; top: 55px; right: 0; width: 300px;
+    background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px; padding: 15px; box-shadow: var(--shadow-lg);
+    display: none;
+}
+
+/* =========================================
+   3. HERO Y FILTROS
+   ========================================= */
+.hero-section { text-align: center; padding: 60px 20px; animation: fadeIn 0.8s ease; }
+.hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 10px; }
+.hero-title span { color: var(--accent); text-shadow: 0 0 20px var(--accent-glow); }
+
+.hero-stats { display: flex; justify-content: center; gap: 15px; margin-top: 30px; }
+.stat-item {
+    background: var(--bg-card); padding: 15px 30px; border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.05); text-align: center;
+}
+
+.filter-bar { display: flex; justify-content: center; gap: 10px; margin: 40px 0; flex-wrap: wrap; }
+.filter-btn {
+    padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05); color: var(--text-muted); cursor: pointer;
+    font-weight: 600; transition: var(--transition);
+}
+.filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* =========================================
+   6. BOTONES Y ACCIONES (NADA ELIMINADO)
+   ========================================= */
+
+/* Panel Administrativo */
+.admin-panel {
+    background: #111827; border: 2px solid rgba(239, 68, 68, 0.3);
+    border-radius: 28px; padding: 30px; margin: 40px auto; max-width: 900px;
+}
+
+/* Animaciones */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* =========================================
+   ESTILO PARA EL FOOTER (PRO)
+   ========================================= */
+.main-footer {
+    background: #030508; /* Un negro más profundo para cerrar el sitio */
+    padding: 40px 0;
+    margin-top: 80px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100%;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.main-footer p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.footer-links {
+    display: flex;
+    gap: 25px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+}
+
+/* Efecto de línea brillante debajo de los enlaces */
+.footer-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: var(--accent);
+    transition: var(--transition);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.footer-links a:hover {
+    color: var(--accent);
+}
+
+.footer-links a:hover::after {
+    width: 100%;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-links {
+        justify-content: center;
+    }
+}
+/* Logo */
+.logo-link { text-decoration: none; }
+.logo-text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+}
+.logo-text span { color: var(--accent); }
+
+/* Buscador Mejorado */
+.header-search {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#buscador-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px 12px 45px;
+    border-radius: 14px;
+    color: white;
+    transition: var(--transition);
+}
+
+#buscador-input:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 15px var(--accent-glow);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    opacity: 0.5;
+}
+
+/* Acciones de la Derecha */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-secondary {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-secondary:hover { color: var(--accent); }
+
+.btn-publish {
+    text-decoration: none;
+    background: var(--accent);
+    color: #000 !important;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px var(--accent-glow);
+    transition: 0.3s;
+}
+
+.btn-publish:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* Notificaciones Wrapper Fix */
+.notifications-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Ajuste para que el User Button de Clerk no se vea gigante */
+#user-button {
+    display: flex;
+    align-items: center;
+    margin-left: 5px;
+}
+.welcome-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px); /* El efecto borroso */
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* Cuando se activa con JS */
+.welcome-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+.welcome-card {
+    background: #0f172a;
+    padding: 40px;
+    border-radius: 28px;
+    border: 1px solid var(--accent);
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 0 40px var(--accent-glow);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.welcome-icon { font-size: 4rem; margin-bottom: 20px; }
+
+.welcome-card h2 { font-size: 2rem; margin-bottom: 10px; }
+
+.welcome-card span { color: var(--accent); font-weight: bold; }
+
+.btn-welcome {
+    margin-top: 25px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-welcome:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent-glow); }
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+.search-profile-container input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
+}
+
+.btn-submit2:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+.btn-submit2 {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 20px var(--accent-glow);
+}
+#contenedor-sistemas {
+    display: grid !important;
+    /* Esto obliga a tener 2 columnas de igual tamaño siempre que quepan */
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 20px !important;
+    align-items: start;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Ajuste de las tarjetas individuales */
+.sistema-container {
+    width: 100% !important; /* Que ocupe todo el ancho de su columna del grid */
+    max-width: none !important; /* Elimina límites de ancho previos */
+    margin-bottom: 0 !important; /* El grid ya da el espacio con 'gap' */
+    box-sizing: border-box;
+}
+
+/* RESPONSIVO: Si la pantalla es muy pequeña (móviles), vuelve a 1 columna */
+@media (max-width: 768px) {
+    #contenedor-sistemas {
+        grid-template-columns: 1fr !important;
+    }
+}
+.noti-content {
+    max-height: 400px;
+    overflow-y: auto;
+    width: 280px;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    display: none; /* Se activa con el click */
+    z-index: 999;
+}
+
+.noti-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}

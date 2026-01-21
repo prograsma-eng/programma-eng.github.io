@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Sistema | Prograsma123</title>
+    <link rel="stylesheet" href="css/Principal.css">
+    <link rel="stylesheet" href="css/publicar.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-container" onclick="location.href='index.html'" style="cursor:pointer">
+                <div class="logo-box">DEVS</div>
+                <h1 class="logo-text">Regresar al<span> Home</span></h1>
+            </div>
+            <div id="user-button"></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="publish-section" style="max-width: 800px; margin: 40px auto;">
+            <div class="section-header">
+                <div class="icon-box">🚀</div>
+                <div class="text-box">
+                    <h3 class="publish-title">Configurar Nuevo Sistema</h3>
+                    <p class="publish-desc">Organiza tus scripts y compártelos con la comunidad.</p>
+                </div>
+            </div>
+
+            <form id="form-sistema">
+                <div class="form-row">
+                    <input type="text" id="sys-titulo" placeholder="Nombre del sistema (ej: Anti-Exploit)" required>
+                    <select id="sys-tag">
+                        <option value="General">📂 Categoría: General</option>
+                        <option value="GUI">🎨 Categoría: GUI / UI</option>
+                        <option value="Combate">⚔️ Categoría: Combate</option>
+                        <option value="Admin">🛠️ Categoría: Admin Tools</option>
+                    </select>
+                </div>
+
+                <div id="archivos-input-container" class="scripts-input-list">
+    </div>
+
+<div class="form-actions">
+    <button type="button" class="btn-add-script" onclick="window.agregarCampoArchivo()">+ Añadir Script</button>
+    <button type="submit" class="btn-submit">Publicar en la Comunidad</button>
+</div>
+<script type="module" src="js/app.js"></script>
+<script type="module">
+    // Cambia 'js/posts-logic.js' por el nombre real de tu archivo de lógica
+    import { configurarFormulario } from './js/modules/auth-logic.js'; 
+    
+    // 1. Activamos el escuchador del formulario
+    configurarFormulario();
+
+    // 2. Creamos el primer campo automáticamente para que no esté vacío
+    if (window.agregarCampoArchivo) {
+        window.agregarCampoArchivo();
+    }
+</script>
+            </form>
+        </section> 
+    </main>
+</script>
+</body>
+</html>

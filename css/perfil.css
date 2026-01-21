@@ -1,0 +1,224 @@
+/* --- VARIABLES Y BASES --- */
+:root {
+    --accent: #00ff88; /* Tu color principal */
+    --accent-rgb: 0, 255, 136;
+}
+
+/* Contenedor principal del Perfil */
+.perfil-wrapper {
+    max-width: 1000px; /* Un poco más ancho para las 2 columnas */
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* --- ENCABEZADO COMPACTO --- */
+.perfil-header-card {
+    background: linear-gradient(145deg, #1a1a1a, #111);
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 20px; /* Reducido para ser más compacto */
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.perfil-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Barra Superior de Botones */
+.perfil-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 10;
+}
+
+.perfil-actions-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Avatar y Nombre Reducidos */
+.avatar-perfil-grande {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    object-fit: cover;
+    margin-bottom: 10px;
+    box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.2);
+}
+
+.nombre-perfil {
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 5px 0;
+    font-weight: 800;
+}
+
+/* Estadísticas Compactas */
+.perfil-stats {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 15px;
+}
+
+.stat-valor {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+/* --- BOTONES --- */
+.btn-volver {
+    background: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 6px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.85rem;
+}
+
+.btn-volver:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+}
+
+.btn-compartir {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.3s;
+}
+
+.btn-compartir:hover { transform: scale(1.05); }
+
+/* FORZAR 2 COLUMNAS */
+#contenedor-sistemas {
+    display: grid !important;
+    /* Esto obliga a tener 2 columnas de igual tamaño siempre que quepan */
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 20px !important;
+    align-items: start;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Ajuste de las tarjetas individuales */
+.sistema-container {
+    width: 100% !important; /* Que ocupe todo el ancho de su columna del grid */
+    max-width: none !important; /* Elimina límites de ancho previos */
+    margin-bottom: 0 !important; /* El grid ya da el espacio con 'gap' */
+    box-sizing: border-box;
+}
+
+/* RESPONSIVO: Si la pantalla es muy pequeña (móviles), vuelve a 1 columna */
+@media (max-width: 768px) {
+    #contenedor-sistemas {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.sistema-container:hover {
+    transform: translateY(-5px);
+    border-color: #444;
+}
+
+/* --- ANIMACIÓN DE RESALTADO (LINK COMPARTIDO) --- */
+.resaltar-sistema {
+    animation: brilloOro 3s ease-in-out;
+    border: 2px solid #ffd700 !important;
+    z-index: 5;
+}
+
+@keyframes brilloOro {
+    0% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
+    20% { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 215, 0, 0); }
+}
+
+/* --- RESPONSIVO (MÓVILES) --- */
+@media (max-width: 768px) {
+    #contenedor-sistemas {
+        grid-template-columns: 1fr; /* 1 columna en celulares */
+    }
+    
+    .nombre-perfil {
+        font-size: 1.5rem;
+    }
+    
+    .perfil-header-card {
+        padding: 15px;
+    }
+}
+.header-search {
+    max-width: 600px;
+    margin: 0 auto 30px auto; /* Lo centra y le da espacio abajo */
+    display: flex;
+    align-items: center;
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 5px 15px;
+    border: 1px solid #333;
+}
+
+.header-search input {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    outline: none;
+}
+
+/* Misceláneos */
+.seccion-titulo {
+    font-size: 1.1rem;
+    color: #eee;
+    margin-bottom: 15px;
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+}
+
+.seguidores-badge {
+    background: #1a1a1a;
+    color: #888;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}

@@ -1,0 +1,343 @@
+#contenedor-sistemas {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra las tarjetas en la pantalla */
+    min-height: 60vh;
+}
+
+/* --- CONTENEDOR PRINCIPAL DEL SISTEMA (Compacto y sin scroll) --- */
+.sistema-container {
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    width: 95%;
+    max-width: 750px;
+    
+    /* Ajuste automático de altura */
+    height: auto;
+    max-height: none;
+    overflow: visible; 
+    
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.sistema-container.editando {
+    border-color: #f59e0b;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+/* --- CABECERA (Header) --- */
+.sistema-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.autor-box {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.comentario-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #444;
+}
+
+.sistema-header h2 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin: 0;
+    outline: none; /* Quita el borde al editar */
+}
+
+/* --- ETIQUETAS Y TEXTOS --- */
+/* Colores base para los badges */
+.tag-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: var(--accent-glow);
+}
+
+/* Script de Servidor (Azul) */
+.type-script {
+    background: rgba(43, 255, 0, 0.2);
+    color: #15ff00;
+    border: 1px solid rgba(0, 255, 55, 0.4);
+}
+
+/* LocalScript (Azul claro / Cyan) */
+.type-localscript {
+    background: rgba(0, 230, 255, 0.2);
+    color: #00e6ff;
+    border: 1px solid rgba(0, 230, 255, 0.4);
+}
+
+/* ModuleScript (Amarillo / Dorado) */
+.type-modulescript {
+    background: rgba(237, 40, 255, 0.2);
+    color: #b028ff;
+    border: 1px solid rgba(219, 40, 255, 0.4);
+}
+
+.text-dim { color: #888; font-size: 0.8rem; }
+.text-accent { color: #00a2ff; font-weight: bold; }
+
+/* --- CAJA DE ACCIONES (Botones) --- */
+.acciones-box {
+    display: flex;
+    gap: 6px;
+}
+
+.acciones-box button, .btn-copy, .btn-submit {
+    background: #25323a;
+    border: 1px solid #444;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.acciones-box button:hover {
+    background: #3a3a3a;
+}
+
+.btn-fav { color: #ffca28; }
+/* Estilo para el botón de favorito */
+.btn-accion.activo {
+    color: #ffca28 !important; /* Dorado */
+    text-shadow: 0 0 8px rgba(255, 202, 40, 0.5);
+    transform: scale(1.2);
+}
+
+.btn-accion:hover {
+    transform: scale(1.3);
+}
+.btn-like { color: #ef4444; }
+
+/* --- ARCHIVOS Y CÓDIGO --- */
+.archivo-item {
+    border-radius: 8px;
+    border: 1px solid #222;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.archivo-header {
+    padding: 6px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.font-code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+/* --- COMENTARIOS --- */
+.comentarios-section {
+    max-height: 400px; /* Altura máxima antes de hacer scroll */
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Scrollbar minimalista */
+.comentarios-section::-webkit-scrollbar {
+    width: 4px;
+}
+.comentarios-section::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+/* El contenedor de comentarios empieza cerrado */
+.comentarios-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 8px 8px;
+}
+
+.comentarios-wrapper.open {
+    max-height: 500px; /* Altura máxima antes de hacer scroll interno */
+    overflow-y: auto;  /* Permite scroll si hay muchos comentarios */
+}
+
+/* Scrollbar personalizada para los comentarios */
+.comentarios-wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+.comentarios-wrapper::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+/* Estilo para el botón de abrir/cerrar */
+.btn-toggle-comentarios {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.btn-toggle-comentarios:hover {
+    background: var(--accent);
+    color: #000;
+}
+/* El contenedor del input y el botón */
+.comentarios-section form.flex-row {
+    display: flex;
+    gap: 12px; /* <--- Esto separa el input del botón */
+    align-items: center; /* Centra el botón con el input si tienen alturas diferentes */
+    margin-bottom: 10px;
+}
+
+.input-minimal {
+    flex: 1; /* Hace que el input ocupe todo el espacio disponible */
+    background: #0c0c0c;
+    border: 1px solid #333;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.input-minimal:focus {
+    border-color: #00a2ff;
+}
+
+.comentario-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+}
+
+/* --- ESTILO SEGUIR --- */
+.btn-seguir {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.btn-seguir.no-siguiendo {
+    background: #00a2ff;
+    color: white;
+}
+
+.btn-seguir.siguiendo {
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+
+.text-danger { color: #ef4444; }
+/* --- BLOQUE DE CÓDIGO CON SCROLL --- */
+.codigo-wrapper {
+    display: none;        /* Se activa con JS */
+    max-height: 400px;    /* ALTURA MÁXIMA DEL CÓDIGO: Ajusta esto a tu gusto */
+    overflow-y: auto;     /* Activa el scroll vertical si el código es largo */
+    overflow-x: auto;     /* Activa el scroll horizontal para líneas largas */
+    background: #0d0d0d;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+/* Personalización de la barra de scroll (para que se vea profesional) */
+.codigo-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.codigo-wrapper::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+.codigo-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Estilo del texto dentro del scroll */
+pre {
+    margin: 0;
+    padding: 15px;
+    font-size: 0.85rem;
+    color: #ccc;
+    font-family: 'Fira Code', monospace;
+    white-space: pre; /* Mantiene el formato Lua original */
+}
+/*boton crear sisteama*/
+.Enviar {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 25px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Botones dentro de la cabecera del archivo (Copiar, Guardar) */
+.archivo-header .flex-row button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.archivo-header .flex-row button:hover {
+    background: var(--accent);
+    color: black;
+}
+.seguidores-badge {
+    background: #1a1a1a;
+    color: #888;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+span[id^="count-seguidores-"] {
+    transition: all 0.3s ease;
+    font-weight: bold;
+    color: var(--accent);
+}
+.btn-accion.activo {
+    color: #ffca28 !important; /* Amarillo/Dorado */
+    transform: scale(1.2);
+}

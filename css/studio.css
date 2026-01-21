@@ -1,0 +1,284 @@
+
+/* --- BASE --- */
+body {
+    background-color: var(--bg-dark);
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- SIDEBAR (LAPTOP) --- */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--bg-dark);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    padding: 25px 15px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.sidebar h2 {
+    font-size: 1.1rem;
+    margin-bottom: 35px;
+    padding-left: 10px;
+}
+
+.nav-item {
+    padding: 12px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-gray);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    transition: 0.2s;
+}
+
+.nav-item:hover { background: var(--bg-hover); color: white; }
+.nav-item.active {
+    background: #1e1e1e;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* --- CONTENIDO PRINCIPAL --- */
+.main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 40px;
+    box-sizing: border-box;
+    max-width: 1400px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    gap: 30px;
+    background: transparent;
+}
+
+/* --- ESTADÍSTICAS (GRID RESPONSIVE) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    text-align: left;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    margin: 10px 0;
+}
+
+/* --- BUSCADOR --- */
+#search-container {
+    flex-grow: 1;
+    max-width: 500px;
+    position: relative;
+}
+
+#input-busqueda {
+    width: 100%;
+    background: #121212;
+    border: 1px solid #333;
+    color: white;
+    padding: 10px 15px 10px 40px;
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+/* Esta parte asegura que solo se vea el círculo del avatar */
+
+#user-button {
+    width: 40px !important;
+    height: 40px !important;
+    overflow: hidden;
+}
+
+/* Ocultar cualquier texto que Clerk intente inyectar */
+#user-button span, 
+#user-button div:not(.cl-userButtonAvatarBox),
+.cl-userButtonTriggerName,
+.cl-userButtonOuter {
+    display: none !important;
+    font-size: 0 !important;
+    opacity: 0 !important;
+    width: 0 !important;
+}
+
+/* Si quieres ocultar el botón completamente cuando no hay nadie logueado */
+#user-button:empty {
+    display: none;
+}
+
+/* --- MEDIA QUERIES (LAPTOPS / TABLETS) --- */
+@media (max-width: 1200px) {
+    .sidebar { width: 220px; }
+    .main-content { margin-left: 220px; width: calc(100% - 220px); padding: 30px; }
+}
+
+@media (max-width: 992px) {
+    .sidebar { width: 80px; }
+    .sidebar h2, .nav-item span:last-child { display: none; }
+    .nav-item { justify-content: center; }
+    .main-content { margin-left: 80px; width: calc(100% - 80px); }
+}
+
+/* --- MOBILE (DISEÑO APP) --- */
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    .sidebar {
+        width: 100%; height: 70px;
+        bottom: 0; top: auto;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        padding: 0;
+    }
+    .sidebar nav { display: flex; width: 100%; justify-content: space-around; }
+    .nav-item { flex-direction: column; font-size: 0.7rem; gap: 5px; margin: 0; border-radius: 0; width: 100%; }
+    
+    .main-content {
+        margin-left: 0; width: 100%;
+        padding: 20px; padding-bottom: 100px;
+    }
+    
+    header { flex-wrap: wrap; }
+    #search-container { order: 3; width: 100%; margin-top: 10px; }
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* studio.css - Bloqueo total de textos de Clerk */
+
+#user-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    overflow: hidden !important;
+}
+
+/* Oculta labels, nombres y botones de texto sobrantes */
+.cl-userButtonTriggerName,
+.cl-userButtonOuter span,
+.cl-userButtonBox span,
+[data-localization-key="userButton.trigger.signIn"],
+#user-button *:not(img):not(picture):not(canvas) {
+    display: none !important;
+    font-size: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Asegura que el contenedor del avatar sea circular y limpio */
+.cl-userButtonAvatarBox {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+}
+
+/* Alineación del encabezado del sistema */
+.sistema-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.input-minimal {
+    flex: 1; /* Hace que el input ocupe todo el espacio disponible */
+    background: #0c0c0c;
+    border: 1px solid #333;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.input-minimal:focus {
+    border-color: #00a2ff;
+}
+
+.footer-links {
+    display: flex;
+    gap: 25px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+}
+
+/* Efecto de línea brillante debajo de los enlaces */
+.footer-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: var(--accent);
+    transition: var(--transition);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.footer-links a:hover {
+    color: var(--accent);
+}
+
+.footer-links a:hover::after {
+    width: 100%;
+}
+/* FORZAR 2 COLUMNAS */
+#contenedor-estudio{
+    display: grid !important;
+    align-items: start;
+}
+
+#highlight-last {
+    margin-top: 20px;
+    background-color: chocolate;
+}
+
+/* Ajuste de las tarjetas individuales */
+.sistema-container {
+    width: 100% !important; /* Que ocupe todo el ancho de su columna del grid */
+    max-width: none !important; /* Elimina límites de ancho previos */
+    margin-bottom: 0 !important; /* El grid ya da el espacio con 'gap' */
+    box-sizing: border-box;
+}
+/* RESPONSIVO: Si la pantalla es muy pequeña (móviles), vuelve a 1 columna */
+@media (max-width: 768px) {
+    #contenedor-sistemas {
+        grid-template-columns: 1fr !important;
+    }
+}
