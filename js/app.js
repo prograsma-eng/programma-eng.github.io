@@ -234,38 +234,101 @@ window.cargarPanelAdmin = () => {
     
     const q = query(collection(db, "reportes"), orderBy("fecha", "desc"));
 
-    // Añadimos el manejo de error después de la función del snapshot
-    onSnapshot(q, 
-        (snap) => {
-            const cont = document.getElementById('contenedor-reportes');
-            if (!cont) return;
+    onSnapshot(q, (snap) => {
+        const cont = document.getElementById('contenedor-reportes');
+        if (!cont) return;
 
-            if (snap.empty) {
-                cont.innerHTML = "<p class='text-muted'>No hay reportes pendientes.</p>";
-                return;
-            }
-
-            cont.innerHTML = snap.docs.map(d => {
-                const data = d.data();
-                return `
-                    <div class="reporte-alerta">
-                        <div>
-                            <h4 class="reporte-titulo">🚨 Reporte: ${data.sistemaTitulo}</h4>
-                            <p class="reporte-motivo"><b>Motivo:</b> ${data.motivo}</p>
-                            <small class="reporte-id">ID: ${data.sistemaId}</small>
-                        </div>
-                        <div class="reporte-acciones">
-                            <button onclick="ignorarReporte('${d.id}')" class="filter-btn">Ignorar</button>
-                            <button onclick="resolverReporte('${d.id}', '${data.sistemaId}')" class="btn-submit" style="padding: 8px 12px; font-size: 0.8rem;">Eliminar Sistema</button>
-                        </div>
-                    </div>`;
-            }).join('');
-        },
-        (error) => {
-            // Este log reemplaza al error rojo "Uncaught" en la consola
-            console.log("Panel Admin: Verificando permisos de moderador...");
+        if (snap.empty) {
+            cont.innerHTML = "<p class='text-muted'>No hay reportes pendientes.</p>";
+            return;
         }
-    );
+
+        // Limpiamos el contenedor
+        cont.innerHTML = "";
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const reporteId = docSnap.id;
+            const sistemaId = data.sistemaId;
+
+            // Creamos el elemento visualmente
+            const div = document.createElement('div');
+            div.className = "reporte-alerta";
+            div.innerHTML = `
+                <div>
+                    <h4 class="reporte-titulo">🚨 Reporte: ${data.sistemaTitulo || 'Sin título'}</h4>
+                    <p class="reporte-motivo"><b>Motivo:</b> ${data.motivo}</p>
+                    <small>ID: ${sistemaId}</small>
+                </div>
+                <div class="reporte-acciones">
+                    <button class="btn-ignorar filter-btn">Ignorar</button>
+                    <button class="btn-eliminar btn-submit" style="background:#ff4444; color:white;">Eliminar Sistema</button>
+                </div>
+            `;
+
+            // ASIGNAMOS LOS EVENTOS POR CÓDIGO (Aquí no importan las comillas del nombre)
+            div.querySelector('.btn-ignorar').addEventListener('click', () => {
+                window.ignorarReporte(reporteId);
+            });
+
+            div.querySelector('.btn-eliminar').addEventListener('click', () => {
+                window.resolverReporte(reporteId, sistemaId);
+            });
+
+            cont.appendChild(div);
+        });
+    });
+};
+
+// --- FUNCIONES DE ACCIÓN PARA EL ADMIN ---
+window.ignorarReporte = async (reporteId) => {
+    try {
+        await deleteDoc(doc(db, "reportes", reporteId));
+        console.log("Reporte quitado.");
+    } catch (e) {
+        alert("Error al borrar reporte: " + e.message);
+    }
+};
+
+window.resolverReporte = async (reporteId, sistemaId) => {
+    if (!confirm("¿ESTÁS SEGURO? Se eliminará el sistema y se notificará al usuario.")) return;
+    
+    try {
+        // 1. Obtener los datos del sistema antes de borrarlo para saber quién es el creador
+        const sistemaRef = doc(db, "sistemas", sistemaId);
+        const sistemaSnap = await getDoc(sistemaRef);
+
+        if (sistemaSnap.exists()) {
+            const sistemaData = sistemaSnap.data();
+            const creadorId = sistemaData.creadorId;
+            const tituloSistema = sistemaData.titulo;
+
+            // 2. Enviar notificación al creador
+            await addDoc(collection(db, "notificaciones"), {
+                usuarioId: creadorId, // ID del dueño del sistema
+                titulo: "Sistema Eliminado ⚠️",
+                mensaje: `Tu sistema "${tituloSistema}" ha sido eliminado por reportes de la comunidad.`,
+                tipo: "alerta",
+                fecha: serverTimestamp(),
+                leido: false
+            });
+
+            // 3. Eliminar el sistema físicamente
+            await deleteDoc(sistemaRef);
+            
+            // 4. Eliminar el reporte de la lista del admin
+            await deleteDoc(doc(db, "reportes", reporteId));
+
+            alert("Sistema eliminado y usuario notificado correctamente.");
+        } else {
+            // Si el sistema ya no existe, igual borramos el reporte
+            await deleteDoc(doc(db, "reportes", reporteId));
+            alert("El sistema ya no existe, se limpió el reporte.");
+        }
+    } catch (e) {
+        console.error("Error en el proceso de eliminación:", e);
+        alert("Hubo un error al procesar la solicitud.");
+    }
 };
 // --- RENDERIZADO Y BUSCADOR ---
 async function renderizar(listaParaPintar = null) {
