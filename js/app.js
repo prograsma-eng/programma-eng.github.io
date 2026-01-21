@@ -151,7 +151,7 @@ scriptClerk.onload = async () => {
 
         if (Clerk.user) {
             window.currentUser = Clerk.user;
-            
+            Clerk.mountUserButton(document.getElementById('user-button'));
             // 1. Escuchar datos del perfil (Favoritos y Seguidores)
             const usuarioRef = doc(db, "usuarios", Clerk.user.id);
             onSnapshot(usuarioRef, 
@@ -330,4 +330,5 @@ if (inputBuscador) {
 }
 
 // Exponer renderizar al objeto window para que otros módulos puedan invocarlo
+
 window.renderizar = renderizar;
