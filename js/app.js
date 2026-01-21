@@ -151,63 +151,56 @@ scriptClerk.onload = async () => {
 
         if (Clerk.user) {
             window.currentUser = Clerk.user;
-            Clerk.mountUserButton(document.getElementById('user-button'));
-            // 1. Escuchar datos del perfil (Favoritos y Seguidores)
+            window.AppStatus.clerkReady = true;
+
+            // MONTAJE DEL BOTÓN DE USUARIO (Con redirección corregida para XAMPP)
+            const userButtonDiv = document.getElementById('user-button');
+            if (userButtonDiv) {
+                Clerk.mountUserButton(document.getElementById('user-button'), {
+                    // Esto asegura que al cerrar sesión te deje en la misma carpeta
+                    afterSignOutUrl: window.location.origin + window.location.pathname
+                });
+                 renderizar();
+            }
+
+            // Sincronización con Firebase (Favoritos y Seguidores)
             const usuarioRef = doc(db, "usuarios", Clerk.user.id);
-            onSnapshot(usuarioRef, 
-                (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        // Guardamos en global para que los filtros y el render los usen
-                        window.misFavoritosGlobal = data.favoritos || [];
-                        window.misSiguiendoGlobal = data.siguiendo || [];
-                        
-                        // Re-renderizamos para que los botones de ❤️ y 👥 se actualicen
-                        if (typeof renderizar === "function") renderizar(); 
-                    }
-                },
-                (err) => {
-                    // Silenciamos el error rojo inicial de permisos
-                    console.log("Perfil: Sincronizando datos de usuario...");
+            onSnapshot(usuarioRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.misFavoritosGlobal = data.favoritos || [];
+                    window.misSiguiendoGlobal = data.siguiendo || [];
+                    if (typeof renderizar === "function") renderizar(); 
                 }
-            );
+            }, (err) => console.log("Sincronizando perfil..."));
 
-            // 2. Registro y Actividad (Notificaciones)
-            // Se ejecutan solo si las funciones existen en el objeto window
-            if (typeof window.verificarYRegistrarPerfil === "function") {
-                window.verificarYRegistrarPerfil();
-            }
-            
-            if (typeof window.rastrearActividad === "function") {
-                window.rastrearActividad();
-            }
-
-            // 3. Verificación de Administrador
+            // Verificar Admin
             if (Clerk.user.id === MI_ADMIN_ID && typeof window.cargarPanelAdmin === "function") {
-                console.log("🛡️ Modo administrador detectado.");
                 window.cargarPanelAdmin();
             }
 
+            // Registrar actividad
+            if (window.verificarYRegistrarPerfil) window.verificarYRegistrarPerfil();
+            if (window.rastrearActividad) window.rastrearActividad();
+
         } else {
-            // Caso: Usuario no logueado (Invitado)
+            // USUARIO INVITADO
             window.currentUser = null;
+            const userBtnDiv = document.getElementById('user-button');
+            if (userBtnDiv) {
+                userBtnDiv.innerHTML = `<button onclick="window.iniciarSesionPersonalizada()" class="btn-publish">Iniciar Sesión</button>`;
+            }
+            renderizar();
             window.misFavoritosGlobal = [];
             window.misSiguiendoGlobal = [];
-            console.log("👤 Navegando como invitado.");
         }
 
-        // 4. Carga Inicial de la UI
-        // Estas funciones deben ir siempre fuera del if(Clerk.user) para que el invitado también vea posts
-        if (typeof iniciarEscuchaSistemas === "function") {
-            iniciarEscuchaSistemas();
-        }
-        
-        if (typeof window.inicializarFiltros === "function") {
-            window.inicializarFiltros();
-        }
+        // Inicializar UI General
+        iniciarEscuchaSistemas();
+        if (window.inicializarFiltros) window.inicializarFiltros();
 
     } catch (err) {
-        console.error("❌ Error crítico en la carga de Clerk/Sistema:", err);
+        console.error("❌ Error en Clerk:", err);
     } 
 };
 
@@ -330,5 +323,17 @@ if (inputBuscador) {
 }
 
 // Exponer renderizar al objeto window para que otros módulos puedan invocarlo
-
 window.renderizar = renderizar;
+// Agrega esto al principio de tu archivo app.js
+window.iniciarSesionPersonalizada = () => {
+    if (window.Clerk) {
+        // Obtenemos la ruta de la carpeta actual (ej: /mi-proyecto/)
+        const pathActual = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        
+        Clerk.openSignIn({
+            // Esto construye: http://localhost/tu-carpeta/gracias.html
+            afterSignInUrl: pathActual + 'gracias.html', 
+            afterSignUpUrl: pathActual + 'gracias.html'
+        });
+    }
+};
