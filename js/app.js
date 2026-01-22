@@ -1,8 +1,8 @@
-setInterval(() => {
-    console.clear();
-    console.log("%c¡ALTO!", "color: red; font-size: 50px; font-weight: bold; -webkit-text-stroke: 1px black;");
-    console.log("%cSi alguien te dijo que pegues algo aquí para hackear, te están robando la cuenta.", "font-size: 20px;");
-}, 1000);
+//setInterval(() => {
+   // console.clear();
+   // console.log("%c¡ALTO!", "color: red; font-size: 50px; font-weight: bold; -webkit-text-stroke: 1px black;");
+   // console.log("%cSi alguien te dijo que pegues algo aquí para hackear, te están robando la cuenta.", "font-size: 20px;");
+//}, 1000);
 /// Importa las funciones para que el script de inicialización las detecte
 import { toggleSeguir} from './modules/social-logic.js'; // Ajusta la ruta si es necesario
 import { escucharComentarios } from './modules/comments-logic.js'; // Ajusta la ruta
@@ -433,4 +433,4 @@ window.iniciarSesionPersonalizada = () => {
 // Añade esto al principio de tu app.js o en un <script> en tu HTML
 
 // Desactivar el clic derecho (opcional)
-document.addEventListener('contextmenu', event => event.preventDefault());
+//document.addEventListener('contextmenu', event => event.preventDefault());

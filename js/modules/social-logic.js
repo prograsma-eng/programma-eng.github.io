@@ -22,7 +22,7 @@ window.toggleNotificaciones = () => {
 export const toggleSeguir = async (creadorId) => { 
     // Usamos Clerk directamente como fuente de verdad
     const user = window.Clerk?.user;
-    if (!user) return alert("Debes iniciar sesión para seguir a otros.");
+if (!user) return; // Si no hay Clerk, Firebase no recibe nada.
 
     if (user.id === creadorId) {
         return alert("¡Eres el creador! No puedes seguirte a ti mismo.");

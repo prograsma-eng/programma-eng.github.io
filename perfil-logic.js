@@ -1,5 +1,5 @@
 import { db, collection, query, where, onSnapshot, orderBy, doc, getDoc, conectarContadorSeguidores } from './js/firebase-config.js';
-
+import{compartirSistemaIndividual,toggleModoEditor,toggleArchivo} from './js/modules/posts-logic.js'
 // 1. PRIMERO: Obtener el ID de la URL
 const params = new URLSearchParams(window.location.search);
 const idPerfil = params.get("id");

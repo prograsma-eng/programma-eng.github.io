@@ -6,7 +6,7 @@ import {
 const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID real de Clerk
 
 // --- ENVIAR COMENTARIO ---
-window.enviarComentario = async (e, id) => {
+export const enviarComentario = async (e, id) => {
     e.preventDefault();
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
     const inp = e.target.querySelector('input');
@@ -67,7 +67,7 @@ window.enviarComentario = async (e, id) => {
 };
 
 // --- ELIMINAR COMENTARIO ---
-window.borrarComentario = async (sysId, comId) => {
+export const borrarComentario = async (sysId, comId) => {
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
     if (!user) return;
 
@@ -91,7 +91,7 @@ window.borrarComentario = async (sysId, comId) => {
 };
 
 // --- LIKES EN COMENTARIOS ---
-window.likeComentario = async (sysId, comId) => {
+export const ikeComentario = async (sysId, comId) => {
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
     if (!user) return window.Clerk?.openSignIn();
     
@@ -105,12 +105,24 @@ window.likeComentario = async (sysId, comId) => {
 };
 
 // --- RESPUESTAS ---
-window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
+export const mostrarInputRespuesta = async (sysId, comId, nombre) => {
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
     if (!user) return alert("Inicia sesión para responder.");
     
-    const txt = prompt(`Respondiendo a ${nombre}:`);
+    let txt = prompt(`Respondiendo a ${nombre}:`);
     if (!txt || !txt.trim()) return;
+
+    // --- 1. LÍMITE DE PALABRAS ---
+    const LIMITE_PALABRAS_RES = 50; 
+    const palabras = txt.trim().split(/\s+/).filter(p => p.length > 0);
+
+    if (palabras.length > LIMITE_PALABRAS_RES) {
+        return alert(`⚠️ La respuesta es muy larga. Máximo ${LIMITE_PALABRAS_RES} palabras.`);
+    }
+
+    // --- 2. PREVENCIÓN XSS (Limpieza básica) ---
+    // Aunque ya usamos escaparHTML al mostrarlo, es mejor limpiar antes de guardar
+    const textoSeguro = txt.replace(/<[^>]*>?/gm, ''); // Elimina etiquetas HTML como <script>
 
     const ref = doc(db, "sistemas", sysId, "comentarios", comId);
     try {
@@ -118,17 +130,17 @@ window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
             respuestas: arrayUnion({
                 autor: user.fullName || "Usuario",
                 autorId: user.id,
-                texto: txt,
+                texto: textoSeguro, // Guardamos el texto limpio
                 likes: [],
                 fecha: Date.now()
             })
         });
+        console.log("✅ Respuesta enviada de forma segura.");
     } catch (error) {
         console.error("Error al responder:", error);
     }
 };
-
-window.borrarRespuesta = async (sysId, comId, idx) => {
+export const borrarRespuesta = async (sysId, comId, idx) => {
     if (!confirm("¿Borrar esta respuesta?")) return;
     const ref = doc(db, "sistemas", sysId, "comentarios", comId);
     const snap = await getDoc(ref);
@@ -212,7 +224,7 @@ window.toggleVerMasRespuestas = (comId) => {
     if (btn) btn.innerText = extras[2].style.display === 'block' ? "Ocultar respuestas" : `Ver más respuestas...`;
 };
 
-window.toggleSeccionComentarios = function(id) {
+export const toggleSeccionComentarios = function(id) {
     const wrapper = document.getElementById(`wrapper-${id}`);
     const btn = document.getElementById(`btn-coms-${id}`);
     if (!wrapper) return;
@@ -226,58 +238,95 @@ window.toggleSeccionComentarios = function(id) {
         if(btn) btn.innerText = "🔼 Ocultar comentarios";
     }
 };
-// --- ESCUCHAR TIEMPO REAL (CORREGIDO) ---
+export const toggleVerMasRespuestas = (comId) => {
+    const extras = document.querySelectorAll(`.extra-${comId}`);
+    const btn = document.getElementById(`btn-ver-${comId}`);
+    if (!extras.length) return;
+    
+    // Cambiamos el display de las respuestas a partir de la segunda (índice 2)
+    extras.forEach((el, idx) => { 
+        if(idx >= 2) el.style.display = el.style.display === 'none' ? 'block' : 'none'; 
+    });
+    
+    const estaAbierto = extras[2] && extras[2].style.display === 'block';
+    if (btn) btn.innerText = estaAbierto ? "Ocultar respuestas" : "Ver más respuestas...";
+};
+// --- ESCUCHAR TIEMPO REAL (VERSIÓN FINAL) ---
 export const escucharComentarios = (sistemaId) => {
     const qComs = query(collection(db, "sistemas", sistemaId, "comentarios"), orderBy("fecha", "asc")); 
 
-    onSnapshot(qComs, 
-        (snap) => {
-            const user = window.currentUser || (window.Clerk && window.Clerk.user);
-            const btn = document.getElementById(`btn-coms-${sistemaId}`);
-            const wrapper = document.getElementById(`wrapper-${sistemaId}`);
-            const cDiv = document.getElementById(`coms-${sistemaId}`);
+    onSnapshot(qComs, (snap) => {
+        const user = window.currentUser || (window.Clerk && window.Clerk.user);
+        const btn = document.getElementById(`btn-coms-${sistemaId}`);
+        const wrapper = document.getElementById(`wrapper-${sistemaId}`);
+        const cDiv = document.getElementById(`coms-${sistemaId}`);
 
-            if (btn && wrapper) {
-                const estaAbierto = wrapper.classList.contains('open');
-                btn.innerText = estaAbierto ? "🔼 Ocultar comentarios" : `💬 Ver comentarios (${snap.size})`;
-            }
-
-            if (!cDiv) return;
-
-           cDiv.innerHTML = snap.docs.map(d => {
-    const comData = d.data();
-    const comId = d.id;
-    const esMioCom = user && (comData.autorId === user.id || user.id === MI_ADMIN_ID);
-    
-    return `
-        <div class="comentario-item" style="border-bottom: 1px solid #222; padding: 10px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <img src="${escaparHTML(comData.foto) || 'https://via.placeholder.com/20'}" style="width:20px; height:20px; border-radius:50%;">
-                    <b style="color:var(--accent); font-size:0.75rem;">
-                        ${escaparHTML(comData.autor)} ${comData.autorId === MI_ADMIN_ID ? '⭐' : ''}
-                    </b>
-                </div>
-                ${esMioCom ? `<button onclick="window.borrarComentario('${sistemaId}', '${comId}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">🗑️</button>` : ''}
-            </div>
-            <p style="margin:5px 0; font-size:0.85rem; color:#eee;">${escaparHTML(comData.texto)}</p>
-            <div style="display:flex; gap:15px; font-size:0.7rem; color:#888;">
-                <span onclick="window.likeComentario('${sistemaId}', '${comId}')" style="cursor:pointer;">❤️ ${comData.likes?.length || 0}</span>
-                <span onclick="window.mostrarInputRespuesta('${sistemaId}', '${comId}', '${escaparHTML(comData.autor)}')" style="cursor:pointer; color:var(--accent); font-weight:bold;">Responder</span>
-            </div>
-        </div>`;
-}).join('');
-        },
-        (error) => {
-            // Este log es silencioso y no aparece en rojo como error fatal
-            console.log(`Comentarios del sistema ${sistemaId}: Esperando autenticación...`);
+        if (btn && wrapper) {
+            const estaAbierto = wrapper.classList.contains('open');
+            btn.innerText = estaAbierto ? "🔼 Ocultar comentarios" : `💬 Ver comentarios (${snap.size})`;
         }
-    );
+
+        if (!cDiv) return;
+
+        cDiv.innerHTML = snap.docs.map(d => {
+            const comData = d.data();
+            const comId = d.id;
+            const esMioCom = user && (comData.autorId === user.id || user.id === MI_ADMIN_ID);
+            const respuestas = comData.respuestas || [];
+            const limite = 2; // Respuestas visibles antes de "Ver más"
+
+            // 1. GENERAR EL HTML DE LAS RESPUESTAS
+            const htmlRespuestas = respuestas.map((res, idx) => {
+                const esMioRes = user && (res.autorId === user.id || user.id === MI_ADMIN_ID);
+                const estiloOculto = idx >= limite ? 'display: none;' : '';
+                
+                return `
+                    <div class="respuesta-item extra-${comId}" 
+                         style="margin-left: 30px; margin-top: 8px; padding: 5px 10px; border-left: 2px solid var(--accent); background: rgba(255,255,255,0.03); ${estiloOculto}">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="color:var(--accent); font-size:0.7rem;">${escaparHTML(res.autor)}</b>
+                            ${esMioRes ? `<button onclick="window.borrarRespuesta('${sistemaId}', '${comId}', ${idx})" style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:10px;">✕</button>` : ''}
+                        </div>
+                        <p style="margin:2px 0; font-size:0.8rem; color:#ccc;">${escaparHTML(res.texto)}</p>
+                    </div>`;
+            }).join('');
+
+            // 2. RETORNAR EL COMENTARIO COMPLETO CON SUS RESPUESTAS
+            return `
+                <div class="comentario-item" style="border-bottom: 1px solid #222; padding: 10px 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <img src="${escaparHTML(comData.foto) || 'https://via.placeholder.com/20'}" style="width:20px; height:20px; border-radius:50%;">
+                            <b style="color:var(--accent); font-size:0.75rem;">
+                                ${escaparHTML(comData.autor)} ${comData.autorId === MI_ADMIN_ID ? '⭐' : ''}
+                            </b>
+                        </div>
+                        ${esMioCom ? `<button onclick="window.borrarComentario('${sistemaId}', '${comId}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">🗑️</button>` : ''}
+                    </div>
+                    <p style="margin:5px 0; font-size:0.85rem; color:#eee;">${escaparHTML(comData.texto)}</p>
+                    <div style="display:flex; gap:15px; font-size:0.7rem; color:#888;">
+                        <span onclick="window.likeComentario('${sistemaId}', '${comId}')" style="cursor:pointer;">❤️ ${comData.likes?.length || 0}</span>
+                        <span onclick="window.mostrarInputRespuesta('${sistemaId}', '${comId}', '${escaparHTML(comData.autor)}')" style="cursor:pointer; color:var(--accent); font-weight:bold;">Responder</span>
+                    </div>
+                    
+                    <div id="contenedor-respuestas-${comId}">${htmlRespuestas}</div>
+                    
+                    ${respuestas.length > limite ? `
+                        <button id="btn-ver-${comId}" onclick="window.toggleVerMasRespuestas('${comId}')" 
+                            style="margin-left:30px; background:none; border:none; color:var(--accent); font-size:0.7rem; cursor:pointer; padding:5px 0;">
+                            Ver ${respuestas.length - limite} respuestas más...
+                        </button>` : ''}
+                </div>`;
+        }).join('');
+    }, (error) => {
+        console.log("Sincronizando comentarios...");
+    });
 };
 
+//window.escucharComentarios = escucharComentarios;
+
 // Asegúrate de que window también use la versión corregida
-window.escucharComentarios = escucharComentarios;
-function escaparHTML(str) {
+export const escaparHTML = (str) => {
     if (!str) return "";
     return str.replace(/[&<>"']/g, m => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
