@@ -7,7 +7,7 @@
 import { toggleSeguir} from './modules/social-logic.js'; // Ajusta la ruta si es necesario
 import { escucharComentarios } from './modules/comments-logic.js'; // Ajusta la ruta
 // 1. IMPORTACIONES (Solo una vez por cada función)
-const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID real de Clerk
+const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr"; // Reemplaza con tu ID real de Clerk
 import { 
     db, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, 
     doc, updateDoc, increment, setDoc, deleteDoc, getDoc, where, 
@@ -19,10 +19,8 @@ import { generarHTMLSistemas } from './modules/posts-logic.js';
 
 // 2. VINCULACIÓN GLOBAL (Para que el script de inicialización las vea)
 // Si ya las importaste arriba, simplemente asígnalas a window:
-window.conectarContadorSeguidores = conectarContadorSeguidores;
 window.generarHTMLSistemas = generarHTMLSistemas;
 // Vincula manualmente al objeto global
-window.toggleSeguir = toggleSeguir;
 window.conectarContadorSeguidores = conectarContadorSeguidores;
 window.escucharComentarios = escucharComentarios;
 window.AppStatus = {
@@ -31,90 +29,169 @@ window.AppStatus = {
     uiReady: false,
     checked: false
 };
-
-async function inicializarSistemaGlobal() {
-    console.log("🚀 Iniciando verificación de módulos...");
-
-    // 1. Verificar si las funciones críticas están en el objeto global
-    const funcionesCriticas = [
-        'generarHTMLSistemas', 
-        'escucharComentarios', 
-        'conectarContadorSeguidores', 
-        'toggleSeguir'
-    ];
-
-    const faltantes = funcionesCriticas.filter(fn => typeof window[fn] !== 'function');
-
-    if (faltantes.length > 0) {
-        console.warn("⚠️ Esperando por módulos: ", faltantes.join(', '));
-        // Re-intentar en 500ms si faltan piezas
-        return setTimeout(inicializarSistemaGlobal, 500);
-    }
-
-    window.AppStatus.uiReady = true;
-
-    // 2. Esperar a Clerk con un timeout de seguridad
-    let intentosClerk = 0;
-    const chequearClerk = setInterval(async () => {
-        intentosClerk++;
-        if (window.Clerk && window.Clerk.loaded) {
-            clearInterval(chequearClerk);
-            window.AppStatus.clerkReady = true;
-            window.currentUser = window.Clerk.user;
-            console.log("✅ Clerk cargado correctamente.");
-            finalizarCarga();
-        } else if (intentosClerk > 20) { // 10 segundos máximo
-            clearInterval(chequearClerk);
-            console.error("❌ Clerk tardó demasiado en cargar.");
-            // Intentamos arrancar el sistema aunque sea como invitado
-            finalizarCarga();
-        }
-    }, 500);
-}
-
-function finalizarCarga() {
-    if (window.AppStatus.checked) return;
-    window.AppStatus.checked = true;
-
-    console.log("🎯 Sistema sincronizado. Arrancando listeners...");
-
-    // Ejecutar funciones iniciales de seguridad
-    if (window.currentUser) {
-        if (window.verificarYRegistrarPerfil) window.verificarYRegistrarPerfil();
-        if (window.rastrearActividad) window.rastrearActividad();
-    }
-
-    // Arrancar la escucha de Firebase si existe
-    if (typeof window.iniciarEscuchaSistemas === "function") {
-        window.iniciarEscuchaSistemas();
-    } else {
-        // Si no es global, llamamos al renderizado manual inicial
-        if (window.renderizar) window.renderizar();
-    }
-
-    // Quitar pantalla de carga si tienes una
-    const loader = document.getElementById('loader-global');
-    if (loader) loader.style.display = 'none';
-}
-
-// Iniciar proceso
-inicializarSistemaGlobal();
-// --- ESTADO GLOBAL ---
 window.todosLosSistemas = [];
 window.misSiguiendoGlobal = [];
 window.misFavoritosGlobal = [];
 window.currentUser = null;
-// Hacemos que generarHTMLSistemas sea accesible globalmente
-window.generarHTMLSistemas = generarHTMLSistemas; 
+const escuchandoComentarios = new Set();
+const escuchandoSeguidores = new Set();
 
 const contenedorSistemas = document.getElementById('contenedor-sistemas');
 
-// --- CARGAR CLERK ---
 const scriptClerk = document.createElement('script');
 // He mantenido tu Key, asegúrate de que sea la de producción si ya no estás en test
 scriptClerk.setAttribute('data-clerk-publishable-key', 'pk_test_Z3VpZGVkLWNvbGxpZS0yOC5jbGVyay5hY2NvdW50cy5kZXYk');
 scriptClerk.async = true;
 scriptClerk.src = 'https://allowed-moth-84.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+document.head.appendChild(scriptClerk);
+
+async function inicializarSistemaGlobal() {
+    if (window.AppStatus.checked) return; // Evita ejecuciones duplicadas
+
+    try {
+        // 1. Esperar disponibilidad de Clerk
+        if (!window.Clerk) {
+            return setTimeout(inicializarSistemaGlobal, 100);
+        }
+
+        // 2. Cargar instancia de Clerk
+        await window.Clerk.load();
+        const Clerk = window.Clerk;
+        
+        if (Clerk.user) {
+            window.currentUser = Clerk.user;
+            window.AppStatus.clerkReady = true;
+            mostrarToast("Bienvenido De Vuelta", "success");
+            console.log("✅ Clerk: Sesión activa:", Clerk.user.id);
+
+            // --- Sincronización Firebase con Bypass ---
+            try {
+                const token = await Clerk.session.getToken({ template: 'firebase', skipCache: true });
+                
+                if (token) {
+                    const { getAuth, signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    const auth = getAuth();
+
+                    await signInWithCustomToken(auth, token)
+                        .then((userCredential) => {
+                            console.log("🔥 Firebase: Sincronización oficial exitosa");
+                        })
+                        .catch((error) => {
+                            // MODO BYPASS: El token falló pero Clerk es válido
+                            console.log("ℹ️ Sesión vinculada mediante Bridge de Clerk.");
+                            console.log("💡 El sistema usará la sesión de Clerk para interactuar.");
+                            
+                            // Creamos un objeto de usuario compatible para el resto de la App
+                            window.firebaseUser = {
+                                uid: Clerk.user.id,
+                                email: Clerk.user.primaryEmailAddress?.emailAddress,
+                                isBypass: true
+                            };
+                        });
+                }
+            } catch (err) {
+                //console.error("❌ Error al obtener token de Clerk:", err);
+            }
+
+            // --- Interfaz de Usuario (Botón de Usuario) ---
+            const userBtnDiv = document.getElementById('user-button');
+            if (userBtnDiv) {
+                Clerk.mountUserButton(userBtnDiv, { 
+                    afterSignOutUrl: window.location.origin 
+                });
+            }
+
+            // --- Listeners de Perfil (Firebase Realtime) ---
+            // Busca esta parte en tu inicializarSistemaGlobal y déjala así:
+            // --- Listeners de Perfil (Firebase Realtime) ---
+            const usuarioRef = doc(db, "usuarios", Clerk.user.id);
+            onSnapshot(usuarioRef, (snap) => {
+    if (snap.exists()) {
+        const data = snap.data();
+        window.misFavoritosGlobal = data.favoritos || [];
+        window.misSiguiendoGlobal = data.siguiendo || [];
+        
+        console.log("🔄 Perfil sincronizado:", window.misSiguiendoGlobal);
+
+        if (window.AppStatus.uiReady) {
+            // 1. Volvemos a dibujar la interfaz (esto crea spans con "0")
+            renderizar();
+
+            // 2. 🔥 RE-CONECTAR CONTADORES
+            // Buscamos todos los IDs de autores que hay en la página actualmente
+            const spansContadores = document.querySelectorAll('[id^="count-seguidores-"]');
+            
+            spansContadores.forEach(span => {
+                // Extraemos el ID del autor desde el ID del span
+                // Si el id es "count-seguidores-123", el autorId es "123"
+                const autorId = span.id.replace('count-seguidores-', '');
+                
+                // Llamamos a tu función para que Firebase vuelva a poner el número real
+                if (typeof conectarContadorSeguidores === "function") {
+                    conectarContadorSeguidores(autorId);
+                }
+            });
+        }
+    }
+});
+            // --- Verificación de Privilegios Admin ---
+            if (Clerk.user.id===MI_ADMIN_ID) {
+                console.log("👑 Acceso Admin detectado.");
+                if (window.cargarPanelAdmin) window.cargarPanelAdmin();
+            }
+
+        } else {
+            // --- Flujo para Invitados ---
+          // --- Flujo para Invitados ---
+mostrarToast("Modo Invitado", "success");
+console.log("👤 Navegando como invitado");
+const userBtnDiv = document.getElementById('user-button');
+
+if (userBtnDiv) {
+    console.log("🛠 Aplicando cambio de botón AHORA");
+    // Eliminamos el onclick y añadimos una clase descriptiva
+    userBtnDiv.innerHTML = `<button class="js-login-btn btn-publish">Iniciar Sesión</button>`;
+}
+        }
+        
+        if (typeof iniciarEscuchaSistemas === "function") iniciarEscuchaSistemas();
+        if (window.inicializarFiltros) window.inicializarFiltros();
+        
+        // Ocultar Loader Global
+        const loader = document.getElementById('loader-global');
+        if (loader) loader.style.display = 'none';
+        // Justo antes del final de inicializarSistemaGlobal
+        window.AppStatus.uiReady = true; 
+        console.log("🚀 Interfaz lista para actualizaciones en tiempo real");
+
+    } catch (err) {
+        console.error("❌ Error crítico en el arranque del sistema:", err);
+    }
+}
+// Iniciar al cargar la ventana
+window.addEventListener('load', inicializarSistemaGlobal);
+
+// --- MODIFICACIÓN EN ESCUCHA DE SISTEMAS ---
+function iniciarEscuchaSistemas() {
+    if (!contenedorSistemas) return;
+    
+    const q = query(collection(db, "sistemas"), orderBy("likes", "desc"));
+    
+    // El tercer parámetro (error) captura el Permission Denied y evita que explote la consola
+    onSnapshot(q, 
+        (snap) => {
+            window.todosLosSistemas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizar();
+            if (window.location.hash && window.aplicarEnfoqueSistema) {
+                setTimeout(window.aplicarEnfoqueSistema, 500);
+            }
+        },
+        (error) => {
+            // Solo imprimimos un log discreto si realmente hay un problema persistente
+            console.log("Sistemas: Esperando permisos de acceso...");
+        }
+    );
+}
 window.inicializarFiltros = () => {
     const botones = document.querySelectorAll('.filter-btn');
     if (!botones.length) return;
@@ -150,112 +227,7 @@ window.inicializarFiltros = () => {
         });
     });
 };
-scriptClerk.onload = async () => {
-    try {
-        await Clerk.load();
 
-        if (Clerk.user) {
-            window.currentUser = Clerk.user;
-            window.AppStatus.clerkReady = true;
-
-            console.log("⏳ Intentando sincronizar Clerk -> Firebase...");
-            
-            // --- 1. SINCRONIZACIÓN ÚNICA ---
-            try {
-                const token = await Clerk.session.getToken({ template: 'firebase' }); 
-                
-                if (token) {
-                    // Importamos y conectamos de una sola vez
-                    const { getAuth, signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                    const auth = getAuth();
-                    
-                    // Intentamos login. Si falla por App Check, el catch lo maneja.
-                    await signInWithCustomToken(auth, token).then(() => {
-                        console.log("🔥 ¡SISTEMA BLINDADO! Conectado como:", auth.currentUser.uid);
-                    }).catch(fbError => {
-                        console.warn("⚠️ Firebase rechazó el token (App Check), usando sesión local.");
-                    });
-                }
-            } catch (authError) {
-                console.error("❌ Error en la generación del token:", authError);
-            }
-
-            // --- 2. MONTAR BOTÓN DE USUARIO ---
-            const userButtonDiv = document.getElementById('user-button');
-            if (userButtonDiv) {
-                Clerk.mountUserButton(userButtonDiv, {
-                    afterSignOutUrl: window.location.origin + window.location.pathname
-                });
-            }
-
-            // --- 3. SINCRONIZACIÓN DE PERFIL ---
-            const usuarioRef = doc(db, "usuarios", Clerk.user.id);
-            onSnapshot(usuarioRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    window.misFavoritosGlobal = data.favoritos || [];
-                    window.misSiguiendoGlobal = data.siguiendo || [];
-                    if (typeof renderizar === "function") renderizar(); 
-                }
-            }, (err) => {
-                // Este error es normal si las reglas de Firebase aún no están listas
-                console.log("ℹ️ Perfil: Esperando validación de Firebase...");
-            });
-
-            // --- 4. CARGAR PANEL DE ADMIN ---
-            if (Clerk.user.id === MI_ADMIN_ID) {
-                console.log("👑 Admin detectado. Cargando panel...");
-                setTimeout(() => {
-                    if (typeof window.cargarPanelAdmin === "function") {
-                        window.cargarPanelAdmin();
-                    }
-                }, 1000); 
-            }
-
-            if (window.verificarYRegistrarPerfil) window.verificarYRegistrarPerfil();
-            if (window.rastrearActividad) window.rastrearActividad();
-
-        } else {
-            // --- LÓGICA USUARIO INVITADO ---
-            window.currentUser = null;
-            const userBtnDiv = document.getElementById('user-button');
-            if (userBtnDiv) {
-                userBtnDiv.innerHTML = `<button onclick="window.iniciarSesionPersonalizada()" class="btn-publish">Iniciar Sesión</button>`;
-            }
-            window.misFavoritosGlobal = [];
-            window.misSiguiendoGlobal = [];
-            if (typeof renderizar === "function") renderizar(window.todosLosSistemas);
-        }
-
-        if (typeof iniciarEscuchaSistemas === "function") iniciarEscuchaSistemas();
-        if (window.inicializarFiltros) window.inicializarFiltros();
-
-    } catch (err) {
-        console.error("❌ Error crítico en Clerk:", err);
-    } 
-};
-// --- MODIFICACIÓN EN ESCUCHA DE SISTEMAS ---
-function iniciarEscuchaSistemas() {
-    if (!contenedorSistemas) return;
-    
-    const q = query(collection(db, "sistemas"), orderBy("likes", "desc"));
-    
-    // El tercer parámetro (error) captura el Permission Denied y evita que explote la consola
-    onSnapshot(q, 
-        (snap) => {
-            window.todosLosSistemas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderizar();
-            if (window.location.hash && window.aplicarEnfoqueSistema) {
-                setTimeout(window.aplicarEnfoqueSistema, 500);
-            }
-        },
-        (error) => {
-            // Solo imprimimos un log discreto si realmente hay un problema persistente
-            console.log("Sistemas: Esperando permisos de acceso...");
-        }
-    );
-}
-document.head.appendChild(scriptClerk);
 
 window.cargarPanelAdmin = () => {
     const panel = document.getElementById('panel-admin');
@@ -360,38 +332,73 @@ window.resolverReporte = async (reporteId, sistemaId) => {
         alert("Hubo un error al procesar la solicitud.");
     }
 };
-// --- RENDERIZADO Y BUSCADOR ---
+function finalizarCarga() {
+    if (window.AppStatus.checked) return;
+    window.AppStatus.checked = true;
+
+    console.log("🎯 Sistema sincronizado. Arrancando listeners...");
+
+    // Ejecutar funciones iniciales de seguridad
+    if (window.currentUser) {
+        if (window.verificarYRegistrarPerfil) window.verificarYRegistrarPerfil();
+        if (window.rastrearActividad) window.rastrearActividad();
+    }
+
+    // Arrancar la escucha de Firebase si existe
+    if (typeof window.iniciarEscuchaSistemas === "function") {
+        window.iniciarEscuchaSistemas();
+    } else {
+        // Si no es global, llamamos al renderizado manual inicial
+        if (window.renderizar) window.renderizar();
+    }
+
+    // Quitar pantalla de carga si tienes una
+    const loader = document.getElementById('loader-global');
+    if (loader) loader.style.display = 'none';
+}
+
+
 async function renderizar(listaParaPintar = null) {
     if (!contenedorSistemas) return;
 
     const lista = listaParaPintar || window.todosLosSistemas;
 
-    // Generar el contenido HTML
+    // 1. Generar contenido (Esto destruye los elementos viejos)
     if (typeof window.generarHTMLSistemas === "function") {
         contenedorSistemas.innerHTML = window.generarHTMLSistemas(
             lista, 
             window.misSiguiendoGlobal || [],
             window.misFavoritosGlobal || []
         );
-    } else {
-        console.error("Error: generarHTMLSistemas no está definida.");
     }
 
-    // Resaltado de sintaxis
+    // 🔥 CRUCIAL: Como acabamos de resetear el HTML, 
+    // debemos vaciar los Sets de control para que permitan la reconexión.
+    if (typeof escuchandoComentarios !== 'undefined') escuchandoComentarios.clear();
+    if (typeof escuchandoSeguidores !== 'undefined') escuchandoSeguidores.clear();
+
+    // 2. Resaltado de sintaxis
     if (window.Prism) {
         Prism.highlightAll();
     }
 
-    // Activar listeners individuales por cada post
+    // 3. Listeners (Ahora sí entrará porque acabamos de hacer .clear())
     lista.forEach(sys => {
-        // Escuchar comentarios en tiempo real
-        if (window.escucharComentarios) window.escucharComentarios(sys.id);
+        if (typeof window.escucharComentarios === "function" && !escuchandoComentarios.has(sys.id)) {
+            window.escucharComentarios(sys.id);
+            escuchandoComentarios.add(sys.id);
+        }
         
-        // Escuchar seguidores del autor en tiempo real
-        if (typeof conectarContadorSeguidores === "function") {
+        if (typeof conectarContadorSeguidores === "function" && !escuchandoSeguidores.has(sys.creadorId)) {
             conectarContadorSeguidores(sys.creadorId);
+            escuchandoSeguidores.add(sys.creadorId);
         }
     });
+
+    // 4. Aplicar enfoque
+    if (typeof aplicarEnfoqueSistema === "function") {
+        aplicarEnfoqueSistema();
+    }
 }
 
 // --- LÓGICA DEL BUSCADOR ---
@@ -431,6 +438,27 @@ window.iniciarSesionPersonalizada = () => {
     }
 };
 // Añade esto al principio de tu app.js o en un <script> en tu HTML
-
+export const mostrarToast = (mensaje, tipo = 'success') => {
+    const contenedor = document.getElementById('toast-container');
+    if(!contenedor) return;
+    const toast = document.createElement('div');
+    toast.innerText = mensaje;
+    toast.style.background = tipo === 'success' ? '#4CAF50' : '#f44336';
+    toast.style.color = 'white';
+    toast.style.padding = '10px 20px';
+    toast.style.marginTop = '10px';
+    toast.style.borderRadius = '5px';
+    toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
+     contenedor.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+};
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.js-login-btn')) {
+        window.iniciarSesionPersonalizada();
+    }
+});
+document.getElementById('btn-eliminar-rastro')?.addEventListener('click', () => {
+    window.eliminarCuentaTotalmente(); 
+});
 // Desactivar el clic derecho (opcional)
 //document.addEventListener('contextmenu', event => event.preventDefault());

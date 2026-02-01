@@ -39,7 +39,7 @@ if (inputBuscador) {
 
         if (window.Prism) Prism.highlightAll();
         filtrados.forEach(sys => {
-            conectarContadorSeguidores(sys.creadorId);
+            //conectarContadorSeguidores(sys.creadorId);
             if(window.escucharComentarios) window.escucharComentarios(sys.id);
         });
     });
