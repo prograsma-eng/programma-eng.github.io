@@ -2,52 +2,52 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>¡Gracias por unirte! - Prograsma123</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizando... | Mi App</title>
     <link rel="stylesheet" href="style.css"> <style>
         body {
-            background: #05070a;
+            background: #0f172a;
             color: white;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
         }
-        .gracias-card {
-            padding: 50px;
-            border-radius: 30px;
-            border: 1px solid var(--accent);
-            box-shadow: 0 0 50px var(--accent-glow);
-            max-width: 500px;
+        .loader-card {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-        .loader {
-            border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--accent);
-            width: 40px;
-            height: 40px;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #334155;
+            border-top: 5px solid #3b82f6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 0 auto 1rem;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="gracias-card">
-        <h1 style="font-size: 3rem;">🚀</h1>
-        <h2 style="color: var(--accent);">¡Gracias por ser parte!</h2>
-        <p>Tu cuenta ha sido activada correctamente.</p>
-        <p style="color: gray;">Redirigiéndote al inicio...</p>
-        <div class="loader"></div>
+
+    <div class="loader-card">
+        <div class="spinner"></div>
+        <h2>¡Sesión Iniciada!</h2>
+        <p id="status-text">Sincronizando con el sistema...</p>
     </div>
 
-    <script>
-        // Después de 3 segundos, lo mandamos al inicio (index.html)
+    <script type="module">
+        // Esperamos un momento para que Clerk procese la cookie de sesión
         setTimeout(() => {
-            window.location.href = "index.html";
-        }, 3500);
+            // Obtenemos la ruta base para volver al inicio
+            const pathRaiz = window.location.pathname.replace('gracias.html', 'index.html');
+            window.location.href = pathRaiz;
+        }, 1500);
     </script>
 </body>
 </html>

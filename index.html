@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+
+<meta http-equiv="Content-Security-Policy" content="
+    default-src 'self'; 
+    script-src 'self' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://www.gstatic.com https://*.firebasejs.com https://*.clerk.accounts.dev;
+    connect-src 'self' https://*.clerk.accounts.dev https://*.firebaseio.com https://*.googleapis.com https://www.gstatic.com;
+    worker-src 'self' blob:;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https://img.clerk.com https://images.clerk.dev https:;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prograsma123 | Admin Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/Sistemas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <link rel="stylesheet" href="css/Principal.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
 </head>
 <body>
 <header>
+    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"></div>
     <div class="header-container">
         <div class="logo-container">
             <a href="index.html" class="logo-link">
@@ -44,7 +56,13 @@
                 </div>
             </div>
 
-            <div id="user-button"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                <div id="user-button"></div> 
+
+                <button id="btn-eliminar-rastro">
+                     Eliminar rastro de datos
+                </button>
+            </div>
         </div>
     </div>
 </header>
@@ -81,9 +99,9 @@
         </section>
 
         <div style="text-align: center; margin: 40px 0;">
-            <button onclick="location.href='publicar.html'" class="btn-submit2" style="width: auto; padding: 15px 40px;">
+             <a href="publicar.html" class="btn-submit2" style="width: auto; padding: 15px 40px;">
                 🚀 Crear Nuevo Sistema
-            </button>
+            </a>
         </div>
 
 <div id="seccion-usuarios-independiente" style="background: #111; padding: 20px; border-radius: 15px; margin: 20px 0;">
@@ -120,6 +138,7 @@
         </div>
     </footer>
     <script type="module" src="./js/modules/posts-logic.js"></script>
+    <script type="module" src="./js//firebase-config.js"></script>
     <script type="module" src="./js/ui-logic.js"></script>
     <script type="module" src="js/app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
