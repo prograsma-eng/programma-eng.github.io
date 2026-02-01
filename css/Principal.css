@@ -315,6 +315,7 @@ header {
     font-weight: 800;
     cursor: pointer;
     box-shadow: 0 10px 20px var(--accent-glow);
+    text-decoration:none;
 }
 #contenedor-sistemas {
     display: grid !important;
@@ -394,4 +395,32 @@ header {
     0% { transform: scale(1); }
     50% { transform: scale(1.2); }
     100% { transform: scale(1); }
+}
+
+.text-dim button {
+    background-color:#1a1a1a;
+    color:var(--accent);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    margin-left: 8px;
+    display:  inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
+.js-ver-comentarios {
+    background-color: #1a1a1a;
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
 }

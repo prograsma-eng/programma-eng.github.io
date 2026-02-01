@@ -65,7 +65,7 @@
     outline: none;
     
     /* --- AQUÍ EL BLINDAJE --- */
-    max-width: 300px; /* Limita el ancho del texto */
+    max-width: 600px; /* Limita el ancho del texto */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; /* Pone "..." al final */
@@ -357,5 +357,22 @@ span[id^="count-seguidores-"] {
 }
 .archivo-header span {
     word-break: break-all; /* Rompe la palabra si es muy larga */
-    max-width: 200px;
+    max-width: 400px;
+}
+
+.archivo-header b {
+    margin:  12px;
+}
+
+.js-nuevo-script {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
