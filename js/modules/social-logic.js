@@ -4,8 +4,9 @@ import {
     conectarContadorSeguidores , getAuth}
   from '../firebase-config.js';
 
+  import {mostrarToast} from '../app.js'
 // --- SISTEMA DE SEGUIMIENTO ---
-const MI_ADMIN_ID = "user_38V8D7ESSRzvjUdE4iLXB44grHP"; // Reemplaza con tu ID real de Clerk
+const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr"; // Reemplaza con tu ID real de Clerk
 // --- ABRIR/CERRAR EL DROPDOWN ---
 window.toggleNotificaciones = () => {
     const dropdown = document.getElementById('noti-dropdown');
@@ -19,62 +20,73 @@ window.toggleNotificaciones = () => {
     }
 };
 // --- SISTEMA DE SEGUIMIENTO (Optimizado para Clerk) ---
-export const toggleSeguir = async (creadorId) => { 
-    // Usamos Clerk directamente como fuente de verdad
+ const toggleSeguir = async (creadorId) => { 
     const user = window.Clerk?.user;
-if (!user) return; // Si no hay Clerk, Firebase no recibe nada.
+    if (!user) return;
 
-    if (user.id === creadorId) {
-        return alert("¡Eres el creador! No puedes seguirte a ti mismo.");
-    }
+    const idLimpio = String(creadorId).trim();
+    if (user.id === idLimpio) return alert("¡Eres el creador!");
 
     const miUserRef = doc(db, "usuarios", user.id);
-    const creadorRef = doc(db, "usuarios", creadorId);
+    const creadorRef = doc(db, "usuarios", idLimpio);
 
     try {
         const miDoc = await getDoc(miUserRef);
         let siguiendoAhora = false;
+        let cambioRealizado = false;
 
         if (!miDoc.exists()) {
-            // Si no existe, lo creamos con el nuevo seguidor
             await setDoc(miUserRef, {
                 id: user.id,
                 nombre: user.fullName || "Usuario",
                 foto: user.imageUrl || "",
-                siguiendo: [creadorId],
-                seguidoresCount: 0,
+                siguiendo: [idLimpio],
                 favoritos: []
             });
             siguiendoAhora = true;
+            cambioRealizado = true;
         } else {
             const siguiendo = miDoc.data().siguiendo || [];
-            if (siguiendo.includes(creadorId)) {
-                await updateDoc(miUserRef, { siguiendo: arrayRemove(creadorId) });
+            if (siguiendo.includes(idLimpio)) {
+                await updateDoc(miUserRef, { siguiendo: arrayRemove(idLimpio) });
                 siguiendoAhora = false;
             } else {
-                await updateDoc(miUserRef, { siguiendo: arrayUnion(creadorId) });
+                await updateDoc(miUserRef, { siguiendo: arrayUnion(idLimpio) });
                 siguiendoAhora = true;
+            }
+            cambioRealizado = true; 
+        }
+
+        // SOLO INCREMENTAMOS SI HUBO UN CAMBIO EXITOSO
+        if (cambioRealizado) {
+            try {
+                await updateDoc(creadorRef, { 
+                    seguidoresCount: increment(siguiendoAhora ? 1 : -1)
+                });
+            } catch (err) {
+                if (err.code === 'not-found') {
+                    await setDoc(creadorRef, { seguidoresCount: siguiendoAhora ? 1 : 0 }, { merge: true });
+                }
             }
         }
 
-        // Actualizamos contador del creador
-        await updateDoc(creadorRef, { 
-            seguidoresCount: increment(siguiendoAhora ? 1 : -1) 
-        });
-
-        // Notificación (Solo si empezamos a seguir)
+        // Actualización de la lista global (Local)
         if (siguiendoAhora) {
-            await addDoc(collection(db, "notificaciones"), {
-                paraId: creadorId,
+            if (!window.misSiguiendoGlobal.includes(idLimpio)) {
+                window.misSiguiendoGlobal.push(idLimpio);
+            }
+            // Notificación (Opcional: puedes envolverla en un try/catch)
+            addDoc(collection(db, "notificaciones"), {
+                paraId: idLimpio,
                 nombreEmisor: user.fullName,
                 fotoEmisor: user.imageUrl,
                 mensaje: `ha comenzado a seguirte.`,
                 tipo: "seguidores",
                 fecha: serverTimestamp()
             });
+        } else {
+            window.misSiguiendoGlobal = window.misSiguiendoGlobal.filter(id => id !== idLimpio);
         }
-
-        if (typeof window.renderizar === "function") window.renderizar();
 
     } catch (e) {
         console.error("Error en toggleSeguir:", e);
@@ -226,16 +238,23 @@ window.buscarPersonasApartado = async () => {
     try {
         const snap = await getDocs(collection(db, "usuarios"));
         const encontrados = [];
-        snap.forEach(doc => {
+
+        // Usamos un bucle for...of para poder usar await dentro si fuera necesario
+        for (const doc of snap.docs) {
             const u = doc.data();
+            // 1. Verificación básica de nombre/id
             if ((u.nombre || "").toLowerCase().includes(busqueda) || (u.id || "").toLowerCase().includes(busqueda)) {
+                
+                // --- TRUCO DE LIMPIEZA ---
+                // Si al intentar cargar la imagen de perfil de Clerk da error, 
+                // es muy probable que el usuario ya no exista.
                 encontrados.push(u);
             }
-        });
+        }
 
         resultadosDiv.innerHTML = encontrados.length === 0 ? "<p>No hay resultados</p>" : encontrados.map(u => `
-            <div class="perfil-item" onclick="window.verPerfil('${u.id}')" style="display:flex; align-items:center; gap:10px; background:#1a1a1a; padding:10px; border-radius:10px; margin-bottom:5px; cursor:pointer; border:1px solid #333;">
-                <img src="${u.foto || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:50%;">
+            <div class="perfil-item" onclick="window.verPerfil('${u.id}')" style="...">
+                <img src="${u.foto}" onerror="this.closest('.perfil-item').style.display='none';" style="width:40px; height:40px; border-radius:50%;">
                 <div>
                     <div style="color:white; font-weight:bold; font-size:0.9rem;">${u.nombre}</div>
                     <div style="color:var(--accent); font-size:0.7rem;">${u.seguidoresCount || 0} seguidores</div>
@@ -244,5 +263,6 @@ window.buscarPersonasApartado = async () => {
         `).join('');
     } catch (e) { console.error(e); }
 };
-
 window.verPerfil = (id) => window.location.href = `perfil.html?id=${id}`;
+
+export{toggleSeguir}

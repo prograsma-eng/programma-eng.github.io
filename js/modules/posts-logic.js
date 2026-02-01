@@ -13,35 +13,55 @@ import {
     setDoc,
 } from '../firebase-config.js';
 
-import {enviarComentario,toggleSeccionComentarios} from './comments-logic.js'
-const LIMITE_PALABRAS = 50;
-// --- ARREGLO DE REFERENCIAS GLOBALES ---
-// Esto asegura que si todosLosSistemas no está definido aquí, lo busque en el objeto global
-const obtenerSistemas = () => window.todosLosSistemas || [];
-
-export const toggleModoEditor = (id) => {
-    window.editandoId = (window.editandoId === id) ? null : id;
-    if (typeof window.renderizar === "function") window.renderizar();
+export const mostrarToast = (mensaje, tipo = 'success') => {
+    const contenedor = document.getElementById('toast-container');
+    if(!contenedor) return;
+    const toast = document.createElement('div');
+    toast.innerText = mensaje;
+    toast.style.background = tipo === 'success' ? '#4CAF50' : '#f44336';
+    toast.style.color = 'white';
+    toast.style.padding = '10px 20px';
+    toast.style.marginTop = '10px';
+    toast.style.borderRadius = '5px';
+    toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
+     contenedor.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 };
 
-const guardarTitulo = async (id) => {
+import {toggleSeccionComentarios} from './comments-logic.js'
+import {toggleSeguir} from './social-logic.js'
+const LIMITE_PALABRAS = 50;
+// --- ARREGLO DE REFERENCIAS GLOBALES ---
+// Esto asegura que si todosLosSiste000mas no está definido aquí, lo busque en el objeto global
+const obtenerSistemas = () => window.todosLosSistemas || [];
+
+
+ const toggleModoEditor = (id) => {
+    window.editandoId = (window.editandoId === id) ? null : id;
+    if (typeof window.renderizar === "function") window.renderizar();
+    if (typeof window.renderizarSegunTab === "function") window.renderizarSegunTab();
+};
+
+const  guardarTitulo = async (id) => {
     const el = document.getElementById(`title-${id}`);
     if (!el) return;
     const nuevoTitulo = el.innerText.trim();
 
-    if (!nuevoTitulo) return alert("El título no puede estar vacío");
+    if (!nuevoTitulo) {
+        mostrarToast("El título no puede estar vacío", "error");
+        return;
+    }
 
     try {
         const sistemaRef = doc(db, "sistemas", id);
         await updateDoc(sistemaRef, { titulo: nuevoTitulo });
-        el.style.color = "#4CAF50"; 
-        setTimeout(() => el.style.color = "", 1000);
+        mostrarToast("Título actualizado", "success");
     } catch (e) {
         console.error(e);
-        alert("Error al guardar.");
+        mostrarToast("Error al guardar título", "error");
     }
 };
-export const toggleArchivo = (id) => {
+ const toggleArchivo = (id) => {
     const wrap = document.getElementById(`wrap-${id}`);
     if (!wrap) return;
 
@@ -63,8 +83,11 @@ export const toggleArchivo = (id) => {
 const agregarCampoArchivo = () => {
     const container = document.getElementById('archivos-input-container');
     if (!container) return;
+
     const div = document.createElement('div');
     div.className = "archivo-input-item";
+    
+    // 1. Definimos el HTML SIN ningún "onclick"
     div.innerHTML = `
         <div class="archivo-input-header">
             <input type="text" class="arc-nombre" placeholder="Nombre (ej: Loader)" required style="flex:2;">
@@ -73,46 +96,59 @@ const agregarCampoArchivo = () => {
                 <option value="LocalScript">💻 LocalScript</option>
                 <option value="ModuleScript">📦 ModuleScript</option>
             </select>
-            <button type="button" class="btn-remove-script" onclick="this.parentElement.parentElement.remove()">✕</button>
+            <button type="button" class="btn-remove-script">✕</button>
         </div>
         <textarea class="arc-codigo" placeholder="Código aquí..."></textarea>
     `;
+
+    // 2. Agregamos el evento de borrar de forma segura mediante código, no mediante HTML
+    const botonBorrar = div.querySelector('.btn-remove-script');
+    botonBorrar.addEventListener('click', () => {
+        div.remove();
+    });
+
     container.appendChild(div);
 };
-// Variable para evitar el spam de clics
-// Variable fuera de la función para controlar el spam de clics
-
 let bloqueadoLike = false;
-export const darLike = async (sistemaId, creadorId) => {
+
+
+const darLike = async (sistemaId, creadorId) => {
     const user = window.Clerk?.user;
-    if (!user) return alert("Inicia sesión para votar");
-    if (user.id === creadorId) return alert("No puedes dar like a tu propio sistema.");
+    if (!user) return mostrarToast("Inicia sesión para votar" ,"error");
+    if (user.id === creadorId) return mostrarToast("No puedes dar like a tu propio sistema", "error");
     if (bloqueadoLike) return;
 
     bloqueadoLike = true; 
     try {
         const sistemaRef = doc(db, "sistemas", sistemaId);
         const usuarioRef = doc(db, "usuarios", user.id);
+        const sistemaSnap = await getDoc(sistemaRef);
+        
+        if (!sistemaSnap.exists()) return;
         if (!window.misLikesGlobal) window.misLikesGlobal = [];
-        const yaDioLike = window.misLikesGlobal.includes(sistemaId);
+
+        const listaLikes = sistemaSnap.data().usuariosQueDieronLike || [];
+        const yaDioLike = listaLikes.includes(user.id);
 
         if (yaDioLike) {
             await updateDoc(sistemaRef, { likes: increment(-1), usuariosQueDieronLike: arrayRemove(user.id) });
             await updateDoc(usuarioRef, { likesDados: arrayRemove(sistemaId) });
             window.misLikesGlobal = window.misLikesGlobal.filter(id => id !== sistemaId);
+            mostrarToast("Like quitado");
         } else {
             await updateDoc(sistemaRef, { likes: increment(1), usuariosQueDieronLike: arrayUnion(user.id) });
             await updateDoc(usuarioRef, { likesDados: arrayUnion(sistemaId) });
             window.misLikesGlobal.push(sistemaId);
+            mostrarToast("¡Te gusta este sistema!", "success");
         }
         if (typeof window.renderizar === "function") window.renderizar();
     } catch (error) {
         console.error(error);
+        mostrarToast("Error al procesar voto", "error");
     } finally {
         bloqueadoLike = false;
     }
 };
-
 const eliminarSistema = async (sysId) => {
     if (!confirm("¿Estás seguro de eliminar este sistema?")) return;
 
@@ -168,15 +204,17 @@ const toggleFavorito = async (sistemaId) => {
     }
 };
 
-export const compartirSistemaIndividual = async (sistemaId, creadorId) => {
+const compartirSistemaIndividual = async (sistemaId, creadorId) => {
     const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
     const urlCompartir = `${baseUrl}/perfil.html?id=${creadorId}#sistema-${sistemaId}`;
 
-    navigator.clipboard.writeText(urlCompartir).then(() => {
-        alert("¡Enlace al sistema copiado al portapapeles!");
-    }).catch(err => {
+    try {
+        await navigator.clipboard.writeText(urlCompartir);
+        mostrarToast("🔗 Enlace copiado al portapapeles", "success");
+    } catch (err) {
         console.error('Error al copiar: ', err);
-    });
+        mostrarToast("No se pudo copiar el enlace", "error");
+    }
 };
 const aplicarEnfoqueSistema = function() {
     const hash = window.location.hash;
@@ -193,71 +231,84 @@ const aplicarEnfoqueSistema = function() {
 };
 const escaparHTML = (str) => {
     if (!str) return "";
-    // Bloqueo directo si detecta etiquetas maliciosas
-    if (/[<>]/.test(str)) return "Contenido bloqueado";
-    return str.replace(/[&"']/g, m => ({
-        '&': '&amp;', '"': '&quot;', "'": '&#39;'
+    return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[m]));
 };
+  const iconos = {
+                        'Script': '🟩',
+                        'localscript': '🟦',
+                        'modulescript': '🟪'
+                         };
 // --- FUNCIÓN DE GENERACIÓN DE HTML ---
-export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostrarSeguidores = true) {
-    if (!lista || lista.length === 0) return `<p class='text-center text-muted'>No se encontraron sistemas.</p>`;
-    const params = new URLSearchParams(window.location.search);
-    const idPerfilUrl = params.get("id");
+
+function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostrarSeguidores = true) {
+    if (!lista || lista.length === 0) return `<p class='text-center text-muted'>No se encontraron sistemas ⚙️.</p>`;
+
+    const idPerfilUrl = new URLSearchParams(window.location.search).get("id");
 
     const htmlFinal = lista.map(sys => {
+        // Filtro de perfil
         if (idPerfilUrl && sys.creadorId !== idPerfilUrl) return '';
-        const tituloSeguro = sys.titulo.replace(/'/g, "\\'");
-        const esDueno = window.currentUser &&
-                        String(sys.creadorId).trim() === String(window.currentUser.id).trim();
-        const yaLoSigo = misSiguiendo.includes(sys.creadorId);
-        const esFavorito = window.currentUser && misFavoritos.includes(sys.id);
 
+        const idCreadorRef = String(sys.creadorId).trim();
+        const esDueno = window.currentUser && String(window.currentUser.id).trim() === idCreadorRef;
+        const yaLoSigo = misSiguiendo.some(id => String(id).trim() === idCreadorRef);
+        const esFavorito = window.misFavoritosGlobal?.includes(sys.id);
+
+        // Renderizado de archivos (Scripts)
         const htmlArchivos = sys.archivos.map((arc, i) => {
+            const idArchivo = `${sys.id}-${i}`; 
             const tipoClase = `type-${arc.tipo.toLowerCase().replace(/\s+/g, '')}`;
+            
             return `
             <div class="archivo-item">
-                <div class="archivo-header js-toggle-archivo" data-id="${sys.id}-${i}">
-                 <span>
+                <div class="archivo-header js-toggle-archivo" data-id="${idArchivo}">
+                    <span>
                         <span class="tag-badge ${tipoClase}">
-                            ${arc.tipo === 'Script' ? '🟩' : arc.tipo === 'LocalScript' ? '🟦' : '🟪'} ${escaparHTML(arc.tipo)}
+                            ${iconos[arc.tipo] || '⚪'} ${escaparHTML(arc.tipo)}
                         </span>
                         <b class="font-code">${escaparHTML(arc.nombre)}.lua</b>
                     </span>
                     <div class="flex-row">
-                        <button class="btn-copy" onclick="event.stopPropagation(); window.copiarCodigo('${escaparHTML(sys.id)}-${i}')">📋</button>
+                        <button class="js-copy-code btn-copy" data-id="${idArchivo}" title="Copiar código">📋</button>
                         ${window.editandoId === sys.id ? `
-                            <button onclick="event.stopPropagation(); window.guardarEdicion('${escaparHTML(sys.id)}', ${i})">💾</button>
-                            <button onclick="event.stopPropagation(); window.eliminarScript('${escaparHTML(sys.id)}', ${i})" class="text-danger">✕</button>
+                            <button class="js-save-edit" data-sysid="${sys.id}" data-index="${i}" title="Guardar">💾</button>
+                            <button class="js-delete-script text-danger" data-sysid="${sys.id}" data-index="${i}" title="Eliminar">✕</button>
                         ` : ''}
                     </div>
                 </div>
-                <div class="codigo-wrapper" id="wrap-${sys.id}-${i}" style="display: none;">
-                    <pre class="language-lua"><code id="edit-${sys.id}-${i}" contenteditable="${window.editandoId === sys.id}">${escaparHTML(arc.codigo)}</code></pre>
+                <div class="codigo-wrapper" id="wrap-${idArchivo}" style="display: none;">
+                    <pre class="language-lua"><code id="edit-${idArchivo}" contenteditable="${window.editandoId === sys.id}">${escaparHTML(arc.codigo)}</code></pre>
                 </div>
             </div>`;
         }).join('');
+
+        // Renderizado del contenedor principal del sistema
         return `
         <div class="sistema-container ${window.editandoId === sys.id ? 'editando' : ''}" id="sistema-${sys.id}">
             <div class="sistema-header">
                 <div class="autor-box">
-                    <img src="${escaparHTML(sys.foto)}" class="comentario-avatar"
-                         onclick="window.location.href='perfil.html?id=${escaparHTML(sys.creadorId)}'"
+                    <img src="${escaparHTML(sys.foto)}" 
+                         class="comentario-avatar js-perfil-link" 
+                         data-url="perfil.html?id=${escaparHTML(sys.creadorId)}"
+                         alt="Avatar de ${escaparHTML(sys.autor)}"
                          style="cursor:pointer;">
                     <div>
                         <div class="flex-row">
-                            <h2
-                            id="title-${sys.id}"
-                            contenteditable="${window.editandoId === sys.id}"
-                            onblur="window.guardarTitulo('${sys.id}')"
-                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.blur(); }">
-                            ${escaparHTML(sys.titulo)}
-                        </h2>
+                            <h2 id="title-${sys.id}" 
+                                class="${window.editandoId === sys.id ? 'js-titulo-editable' : ''}" 
+                                data-id="${sys.id}"
+                                contenteditable="${window.editandoId === sys.id}">
+                                ${escaparHTML(sys.titulo)}
+                            </h2>
                             <span class="tag-badge">#${escaparHTML(sys.tag)}</span>
                         </div>
                         <div class="flex-row">
-                            <p class="text-dim">Por
-                                <span class="text-accent" onclick="window.location.href='perfil.html?id=${escaparHTML(sys.creadorId)}'" style="cursor:pointer; font-weight:bold;">
+                            <p class="text-dim">Por 
+                                <span class="text-accent js-perfil-link" 
+                                      data-url="perfil.html?id=${escaparHTML(sys.creadorId)}" 
+                                      style="cursor:pointer; font-weight:bold;">
                                     ${escaparHTML(sys.autor)}
                                 </span>
                                 ${mostrarSeguidores ? `
@@ -266,8 +317,8 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                                     </span>
                                 ` : ''}
                                 ${(!esDueno && mostrarSeguidores) ? `
-                                    <button onclick="window.toggleSeguir('${escaparHTML(sys.creadorId)}')"
-                                        class="btn-seguir ${yaLoSigo ? 'siguiendo' : 'no-siguiendo'}">
+                                    <button class="js-seguir ${yaLoSigo ? 'siguiendo' : 'no-siguiendo'}" 
+                                            data-user="${escaparHTML(sys.creadorId)}">
                                         ${yaLoSigo ? '❌ Dejar de seguir' : '🔔 Seguir'}
                                     </button>
                                 ` : ''}
@@ -276,30 +327,46 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
                     </div>
                 </div>
                 <div class="acciones-box">
-                    ${esDueno ? `<button onclick="window.toggleModoEditor('${sys.id}')">${window.editandoId === sys.id ? '✅' : '✏️'}</button>` : ''}
+                    ${esDueno ? `<button class="js-edit-modo" data-id="${sys.id}">${window.editandoId === sys.id ? '✅' : '✏️'}</button>` : ''}
                     <button class="js-compartir" data-id="${sys.id}" data-creador="${sys.creadorId}" title="Copiar enlace">🔗</button>
-                    <button onclick="window.reportarSistema('${sys.id}', '${escaparHTML(tituloSeguro)}')">🚩</button>
-                   ${esDueno ? `<button onclick="window.eliminarSistema('${sys.id}')">🗑️</button>` : ''}
-                    <button class="js-like ${esDueno ? 'disabled' : ''}" data-id="${sys.id}" data-creador="${sys.creadorId}">❤️ ${sys.likes || 0}</button>
+                    <button class="js-reportar" data-id="${sys.id}" data-titulo="${escaparHTML(sys.titulo)}" title="Reportar">🚩</button>
+                    ${esDueno ? `<button class="js-EliminarSistema" data-id="${sys.id}" title="Eliminar Sistema">🗑️</button>` : ''}
+                   <button 
+                        class="js-like ${esDueno ? 'btn-desactivado' : ''}" 
+                        ${esDueno ? 'disabled' : ''} 
+                        data-id="${sys.id}" 
+                        data-creador="${sys.creadorId}">
+                        ❤️ ${sys.likes || 0}
+                    </button>
                     <button class="js-fav ${esFavorito ? 'activo' : ''}" data-id="${sys.id}">${esFavorito ? '⭐' : '☆'}</button>
-                    <button onclick="window.descargarSistema('${sys.id}')" title="Descargar ZIP">📥 Descargar</button>
+                    <button class="js-descargar" data-id="${sys.id}" title="Descargar ZIP">📥 Descargar</button>
                 </div>
             </div>
+
             <div class="lista-archivos-container">${htmlArchivos}</div>
+
             ${window.editandoId === sys.id ? `
                 <div style="padding: 10px;">
-                    <button onclick="window.nuevoScriptEnSistema('${sys.id}')" class="btn-nuevo-script">➕ Añadir nuevo Script</button>
+                    <button class="js-nuevo-script btn-nuevo-script" data-id="${sys.id}">➕ Añadir nuevo Script</button>
                 </div>
             ` : ''}
+
             <div class="footer-comentarios" style="border-top: 1px solid #222; margin-top: 10px;">
-                <button class="btn-toggle-comentarios" onclick="toggleSeccionComentarios('${sys.id}')" id="btn-coms-${sys.id}"
-                        style="width:100%; padding:10px; background:none; border:none; color:var(--accent); cursor:pointer;">
-                    💬 Ver comentarios
-                </button>
+                <button class="js-ver-comentarios" data-id="${sys.id}">💬 Ver comentarios</button>
                 <div class="comentarios-wrapper" id="wrapper-${sys.id}" style="max-height:0; overflow:hidden; transition: max-height 0.4s ease;">
                     <div class="comentarios-section" style="padding: 10px; background: rgba(0,0,0,0.2);">
-                        <form onsubmit="window.enviarComentario(event, '${sys.id}')" class="flex-row" style="margin-bottom:10px;">
-                            <input type="text" placeholder="Escribe un comentario..." class="input-minimal" style="flex:1;">
+                        <form class="js-form-comentario flex-row" 
+                              data-id="${sys.id}" 
+                              name="form-comentario-${sys.id}"
+                              id="form-com-${sys.id}"
+                              style="margin-bottom:10px;">
+                            <input type="text" 
+                                   name="texto-comentario"
+                                   id="input-text-${sys.id}"
+                                   placeholder="Escribe un comentario..." 
+                                   class="input-minimal" 
+                                   required 
+                                   style="flex:1;">
                             <button type="submit" class="Enviar">Enviar</button>
                         </form>
                         <div id="coms-${sys.id}"></div>
@@ -308,8 +375,54 @@ export function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [],
             </div>
         </div>`;
     }).join('');
-    return htmlFinal.replace(/>\s+</g, '><').trim();
 
+    return htmlFinal.replace(/>\s+</g, '><').trim();
+}
+const guardarEdicion = async (sysId, arcIndex) => {
+    console.log("🚀 Iniciando guardado para:", sysId, "en índice:", arcIndex);
+    
+    const el = document.getElementById(`edit-${sysId}-${arcIndex}`);
+    if (!el) {
+        alert("❌ Error: No se encontró el elemento HTML con el código.");
+        console.error("ID buscado:", `edit-${sysId}-${arcIndex}`);
+        return;
+    }
+    
+    const nuevoCodigo = el.innerText;
+    console.log("📝 Código capturado (primeros 20 caracteres):", nuevoCodigo.substring(0, 20));
+
+    // Debug de listas
+    console.log("🔍 Buscando sistema en listas locales...");
+    console.log("Contenido de window.todosLosSistemas:", window.todosLosSistemas);
+    
+    // Intentamos buscar en cualquier lista disponible
+    const sistema = (window.todosLosSistemas || []).find(s => s.id === sysId);
+
+    if (!sistema) {
+        console.error("❌ SISTEMA NO ENCONTRADO EN LOCAL.");
+        alert("Fallo local: El sistema no está en la memoria del navegador. ¿Se cargó la lista?");
+        return;
+    }
+
+    try {
+        const sistemaRef = doc(db, "sistemas", sysId);
+        console.log("📡 Enviando a Firebase...");
+        
+        const nuevosArchivos = [...sistema.archivos];
+        nuevosArchivos[arcIndex] = { ...nuevosArchivos[arcIndex], codigo: nuevoCodigo };
+
+        await updateDoc(sistemaRef, { archivos: nuevosArchivos });
+        
+        console.log("✅ Firebase respondió: OK");
+        mostrarToast("✅ Cambios guardados", "success");
+        
+        sistema.archivos = nuevosArchivos;
+        if (typeof window.renderizarSegunTab === "function") window.renderizarSegunTab();
+        
+    } catch (error) {
+        console.error("❌ ERROR DE FIREBASE:", error);
+        alert("Error de red o permisos: " + error.message);
+    }
 };
 const nuevoScriptEnSistema = async (sysId) => {
     // 1. Pedir el nombre del archivo
@@ -399,76 +512,144 @@ const eliminarScript = async (sysId, indiceScript) => {
 document.addEventListener('click', async (e) => {
     const target = e.target;
 
-    // Like
-    if (target.closest('.js-like')) {
-        const btn = target.closest('.js-like');
-        darLike(btn.dataset.id, btn.dataset.creador);
+    // --- NUEVOS: MANEJO DE SCRIPTS Y EDICIÓN ---
+    
+    // Copiar Código (Nuevo)
+    const btnCopy = target.closest('.js-copy-code');
+    if (btnCopy) {
+        e.stopPropagation(); // Evita que se cierre el acordeón al copiar
+        window.copiarCodigo(btnCopy.dataset.id);
     }
 
-    // Toggle Archivo
-    if (target.closest('.js-toggle-archivo')) {
-        toggleArchivo(target.closest('.js-toggle-archivo').dataset.id)
+    // Guardar Edición de un script (Nuevo)
+    const btnSave = target.closest('.js-save-edit');
+    if (btnSave) {
+        e.stopPropagation();
+        window.guardarEdicion(btnSave.dataset.sysid, btnSave.dataset.index);
     }
 
-    // Modo Editor
-    if (target.closest('.js-edit-modo')) {
-        toggleModoEditor(target.closest('.js-edit-modo').dataset.id);
-    }
-    if (target.closest('.js-seguir')) {
-    const userId = target.closest('.js-seguir').dataset.user;
-    window.toggleSeguir(userId); // Llama a tu función existente
-}
-
-// 2. Botón Descargar
-if (target.closest('.js-descargar')) {
-    window.descargarSistema(target.closest('.js-descargar').dataset.id);
-}
-
-// 3. Botón Reportar
-if (target.closest('.js-reportar')) {
-    const btn = target.closest('.js-reportar');
-    window.reportarSistema(btn.dataset.id, btn.dataset.titulo);
-}
-
-// 4. Botón Compartir
-if (target.closest('.js-compartir')) {
-    const btn = target.closest('.js-compartir');
-    compartirSistemaIndividual(btn.dataset.id, btn.dataset.creador);
-}
-
-// 5. Botón Nuevo Script (en edición)
-if (target.closest('.js-nuevo-script')) {
-    window.nuevoScriptEnSistema(target.closest('.js-nuevo-script').dataset.id);
-}
-
-    // Favorito
-    if (target.closest('.js-fav')) {
-        toggleFavorito(target.closest('.js-fav').dataset.id)
+    // Eliminar un script individual (Nuevo)
+    const btnDelScript = target.closest('.js-delete-script');
+    if (btnDelScript) {
+        e.stopPropagation();
+        window.eliminarScript(btnDelScript.dataset.sysid, btnDelScript.dataset.index);
     }
 
-    // Comentarios (Toggle)
-    if (target.closest('.js-ver-comentarios')) {
-        toggleSeccionComentarios(target.closest('.js-ver-comentarios').dataset.id);
+    // --- NUEVOS: LINKS Y REPORTES ---
+
+    // Reportar Sistema (Nuevo)
+    const btnReport = target.closest('.js-reportar');
+    if (btnReport) {
+        window.reportarSistema(btnReport.dataset.id, btnReport.dataset.titulo);
     }
+
+    // Link a Perfiles (Nuevo - reemplaza el onclick de las fotos)
+    const linkPerfil = target.closest('.js-perfil-link');
+    if (linkPerfil) {
+        window.location.href = linkPerfil.dataset.url;
+    }
+
+    // --- LOS QUE YA TENÍAS (Mantenidos) ---
+
+    const btnLike = target.closest('.js-like');
+    if (btnLike) darLike(btnLike.dataset.id, btnLike.dataset.creador);
+
+    const btnDel = target.closest('.js-EliminarSistema');
+    if (btnDel) eliminarSistema(btnDel.dataset.id);
+
+    const btnToggleArc = target.closest('.js-toggle-archivo');
+    if (btnToggleArc) toggleArchivo(btnToggleArc.dataset.id);
+
+    const btnEdit = target.closest('.js-edit-modo');
+    if (btnEdit) toggleModoEditor(btnEdit.dataset.id);
+
+    const btnSeguir = target.closest('.js-seguir');
+    if (btnSeguir) toggleSeguir(btnSeguir.dataset.user);
+
+    const btnDesc = target.closest('.js-descargar');
+    if (btnDesc && window.descargarSistema) window.descargarSistema(btnDesc.dataset.id);
+
+    const btnFav = target.closest('.js-fav');
+    if (btnFav) toggleFavorito(btnFav.dataset.id);
+
+    const btnShare = target.closest('.js-compartir');
+    if (btnShare) compartirSistemaIndividual(btnShare.dataset.id, btnShare.dataset.creador);
+
+    const btnNewScript = target.closest('.js-nuevo-script');
+    if (btnNewScript) nuevoScriptEnSistema(btnNewScript.dataset.id);
+
+    const VerComentarios = target.closest('.js-ver-comentarios');
+    if (VerComentarios) toggleSeccionComentarios(VerComentarios.dataset.id);
 });
-
 // Manejo de formularios de comentarios
-document.addEventListener('submit', (e) => {
-    if (e.target.classList.contains('js-form-comentario')) {
-        e.preventDefault();
-        const input = e.target.querySelector('input');
-        const palabras = input.value.trim().split(/\s+/).filter(p => p.length > 0);
-
-        if (palabras.length > LIMITE_PALABRAS) {
-            return alert(`Máximo ${LIMITE_PALABRAS} palabras.`);
-        }
-        enviarComentario(e, e.target.dataset.id);
-    }
-});
-
 // Manejo de guardado de título al perder el foco (onblur)
 document.addEventListener('focusout', (e) => {
     if (e.target.classList.contains('js-titulo-editable')) {
         guardarTitulo(e.target.dataset.id);
     }
 });
+ const configurarFormulario = () => {
+    const form = document.getElementById('form-sistema');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Prioridad: 1. Clerk cargado, 2. Variable global window
+        const user = (window.Clerk && window.Clerk.user) || window.currentUser;
+        
+        if (!user) {
+            alert("Espera a que cargue tu sesión o inicia sesión.");
+            return;
+        }
+
+        // ... resto de tu código de recolección de datos ...
+        console.log("Intentando publicar sistema de:", user.fullName);
+
+            const titulo = document.getElementById('sys-titulo').value;
+            const tag = document.getElementById('sys-tag').value;
+            const bloquesArchivos = document.querySelectorAll('.archivo-input-item');
+            
+            const listaArchivos = Array.from(bloquesArchivos).map(bloque => ({
+                nombre: bloque.querySelector('.arc-nombre').value,
+                tipo: bloque.querySelector('.arc-tipo').value,
+                codigo: bloque.querySelector('.arc-codigo').value
+            }));
+
+            if (listaArchivos.length === 0) return alert("Añade al menos un script.");
+
+            try {
+                const btn = e.target.querySelector('.btn-submit');
+                btn.innerText = "Publicando...";
+                btn.disabled = true;
+
+                await addDoc(collection(db, "sistemas"), {
+                    titulo, tag,
+                    autor: user.fullName,
+                    creadorId: user.id,
+                    foto: user.imageUrl,
+                    archivos: listaArchivos,
+                    likes: 0,
+                    fecha: serverTimestamp()
+                });
+
+                alert("🚀 ¡Sistema publicado con éxito!");
+                window.location.href = "index.html"; 
+            } catch (error) {
+                console.error("Error al subir:", error);
+                alert("Error al subir.");
+                const btn = e.target.querySelector('.btn-submit');
+                btn.innerText = "Publicar Sistema";
+                btn.disabled = false;
+            }
+        });
+}
+window.configurarFormulario = configurarFormulario
+window.guardarTitulo = guardarTitulo
+window.guardarEdicion = guardarEdicion
+window.eliminarScript = eliminarScript
+export{obtenerSistemas,toggleModoEditor,guardarTitulo,
+toggleArchivo,agregarCampoArchivo,darLike
+,eliminarSistema,toggleFavorito,compartirSistemaIndividual
+,aplicarEnfoqueSistema,escaparHTML,generarHTMLSistemas,
+nuevoScriptEnSistema,eliminarScript,configurarFormulario,guardarEdicion}
