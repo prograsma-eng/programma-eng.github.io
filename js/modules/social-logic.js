@@ -233,36 +233,79 @@ window.descargarSistema = async function(sistemaId) {
 window.buscarPersonasApartado = async () => {
     const busqueda = document.getElementById('input-persona')?.value.trim().toLowerCase();
     const resultadosDiv = document.getElementById('resultados-personas');
-    if (!busqueda || !resultadosDiv) { if(resultadosDiv) resultadosDiv.innerHTML = ""; return; }
+    
+    if (!busqueda || !resultadosDiv) { 
+        if(resultadosDiv) resultadosDiv.innerHTML = ""; 
+        return; 
+    }
 
     try {
         const snap = await getDocs(collection(db, "usuarios"));
-        const encontrados = [];
+        resultadosDiv.innerHTML = ""; // Limpiamos antes de empezar
 
-        // Usamos un bucle for...of para poder usar await dentro si fuera necesario
-        for (const doc of snap.docs) {
-            const u = doc.data();
-            // 1. Verificación básica de nombre/id
-            if ((u.nombre || "").toLowerCase().includes(busqueda) || (u.id || "").toLowerCase().includes(busqueda)) {
-                
-                // --- TRUCO DE LIMPIEZA ---
-                // Si al intentar cargar la imagen de perfil de Clerk da error, 
-                // es muy probable que el usuario ya no exista.
-                encontrados.push(u);
-            }
+        const encontrados = snap.docs
+            .map(doc => doc.data())
+            .filter(u => 
+                (u.nombre || "").toLowerCase().includes(busqueda) || 
+                (u.id || "").toLowerCase().includes(busqueda)
+            );
+
+        if (encontrados.length === 0) {
+            resultadosDiv.innerHTML = "<p style='color:gray;'>No hay resultados</p>";
+            return;
         }
 
-        resultadosDiv.innerHTML = encontrados.length === 0 ? "<p>No hay resultados</p>" : encontrados.map(u => `
-            <div class="perfil-item" onclick="window.verPerfil('${u.id}')" style="...">
-                <img src="${u.foto}" onerror="this.closest('.perfil-item').style.display='none';" style="width:40px; height:40px; border-radius:50%;">
-                <div>
-                    <div style="color:white; font-weight:bold; font-size:0.9rem;">${u.nombre}</div>
-                    <div style="color:var(--accent); font-size:0.7rem;">${u.seguidoresCount || 0} seguidores</div>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { console.error(e); }
+        encontrados.forEach(u => {
+            // Creamos el contenedor del perfil
+            const item = document.createElement('div');
+            item.className = "perfil-item";
+            item.style.cssText = "display:flex; align-items:center; gap:10px; background:#1a1a1a; padding:10px; border-radius:10px; cursor:pointer; margin-bottom:5px; border:1px solid #333;";
+
+            // Evento de clic SEGURO para el CSP
+            item.addEventListener('click', () => {
+                if (window.verPerfil) window.verPerfil(u.id);
+            });
+
+            // Creamos la imagen
+            const img = document.createElement('img');
+            img.src = u.foto || 'https://via.placeholder.com/40';
+            img.style.cssText = "width:40px; height:40px; border-radius:50%; object-fit:cover;";
+            
+            // Reemplazo del onerror: si falla la imagen, ocultamos el item
+            img.addEventListener('error', () => {
+                item.style.display = 'none';
+            });
+
+            // Contenedor de texto
+            const info = document.createElement('div');
+            info.innerHTML = `
+                <div style="color:white; font-weight:bold; font-size:0.9rem;">${u.nombre}</div>
+                <div style="color:#007bff; font-size:0.7rem;">${u.seguidoresCount || 0} seguidores</div>
+            `;
+
+            // Armamos el elemento
+            item.appendChild(img);
+            item.appendChild(info);
+            resultadosDiv.appendChild(item);
+        });
+
+    } catch (e) { 
+        console.error("Error en búsqueda:", e); 
+    }
 };
+// Vinculamos el buscador de forma externa
+document.addEventListener('DOMContentLoaded', () => {
+    const inputPersona = document.getElementById('input-persona');
+    if (inputPersona) {
+        inputPersona.addEventListener('input', window.buscarPersonasApartado);
+    }
+
+    // Aprovechamos para arreglar el botón de eliminar rastro
+    const btnEliminar = document.getElementById('btn-eliminar-rastro');
+    if (btnEliminar) {
+        btnEliminar.addEventListener('click', window.eliminarCuentaTotalmente);
+    }
+});
 window.verPerfil = (id) => window.location.href = `perfil.html?id=${id}`;
 
 export{toggleSeguir}

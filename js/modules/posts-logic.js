@@ -597,7 +597,20 @@ document.addEventListener('focusout', (e) => {
         
         // Prioridad: 1. Clerk cargado, 2. Variable global window
         const user = (window.Clerk && window.Clerk.user) || window.currentUser;
+        if (!user) return;
         
+        const miUserRef = doc(db, "usuarios", user.id);
+        
+        const miDoc = await getDoc(miUserRef);
+        if (!miDoc.exists()) {
+                await setDoc(miUserRef, {
+                    id: user.id,
+                    nombre: user.fullName || "Usuario",
+                    foto: user.imageUrl || "",
+                    siguiendo: [],
+                    favoritos: []
+                });
+        }
         if (!user) {
             alert("Espera a que cargue tu sesión o inicia sesión.");
             return;
