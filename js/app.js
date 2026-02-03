@@ -146,12 +146,11 @@ async function inicializarSistemaGlobal() {
 mostrarToast("Modo Invitado", "success");
 console.log("👤 Navegando como invitado");
 const userBtnDiv = document.getElementById('user-button');
-
-if (userBtnDiv) {
-    console.log("🛠 Aplicando cambio de botón AHORA");
-    // Eliminamos el onclick y añadimos una clase descriptiva
-    userBtnDiv.innerHTML = `<button class="js-login-btn btn-publish">Iniciar Sesión</button>`;
-}
+        if (userBtnDiv) {
+            console.log("🛠 Aplicando cambio de botón AHORA");
+            // Eliminamos el onclick y añadimos una clase descriptiva
+            userBtnDiv.innerHTML = `<button class="js-login-btn btn-publish">Iniciar Sesión</button>`;
+        }
         }
         
         if (typeof iniciarEscuchaSistemas === "function") iniciarEscuchaSistemas();
@@ -459,6 +458,18 @@ document.addEventListener('click', (e) => {
 });
 document.getElementById('btn-eliminar-rastro')?.addEventListener('click', () => {
     window.eliminarCuentaTotalmente(); 
+});
+// Esperamos a que el DOM cargue para buscar el elemento
+document.addEventListener('DOMContentLoaded', () => {
+    const inputPersona = document.getElementById('input-persona');
+    
+    if (inputPersona) {
+        // Esta es la forma segura que el CSP permite
+        inputPersona.addEventListener('input', () => {
+            window.buscarPersonasApartado();
+        });
+        console.log("✅ Buscador de usuarios vinculado correctamente.");
+    }
 });
 // Desactivar el clic derecho (opcional)
 //document.addEventListener('contextmenu', event => event.preventDefault());

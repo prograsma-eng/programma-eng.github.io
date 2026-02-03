@@ -21,73 +21,125 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 window.eliminarCuentaTotalmente = async () => {
-    console.log("🛠️ Intentando ejecutar eliminarCuentaTotalmente...");
+    console.log("🛠️ Iniciando limpieza profunda (Seguidores + Likes + Sistemas)...");
 
-    // 1. Verificar si Clerk está cargado
-    if (!window.Clerk || !window.Clerk.user) {
-        console.error("❌ CLERK NO DETECTADO:", window.Clerk);
-        alert("Error: No se detecta tu sesión de Clerk. Espera a que cargue la página.");
+    if (!window.Clerk?.user) {
+        alert("Sesión no detectada.");
         return;
     }
 
     const userId = window.Clerk.user.id;
-    console.log("👤 Usuario identificado:", userId);
-
-    const confirmar = confirm("⚠️ ¿ESTÁS SEGURO? Se borrarán tus sistemas, notificaciones y perfil de Firestore.");
-    if (!confirmar) {
-        console.log("px Cancelado por el usuario.");
-        return;
-    }
+    const confirmar = confirm("⚠️ ¿Borrar todo? Se eliminarán tus sistemas, seguidores, seguidos y likes permanentemente.");
+    if (!confirmar) return;
 
     try {
         const batch = writeBatch(db);
-        console.log("📦 Batch creado. Preparando borrado de perfil...");
+        // --- 1. PROCESAR TODOS LOS SISTEMAS PARA LIMPIAR COMENTARIOS Y RESPUESTAS ---
+        console.log("🔍 Escaneando todos los sistemas para borrar tus comentarios y respuestas...");
+        const todosLosSistemas = await getDocs(collection(db, "sistemas"));
 
-        // Referencia al perfil principal
-        const userRef = doc(db, "usuarios", userId);
-        batch.delete(userRef);
-        console.log("📌 Marcado para borrar perfil en: usuarios/" + userId);
+        for (const sistemaDoc of todosLosSistemas.docs) {
+            // A. Buscar tus comentarios (Sub-colección)
+            const comentariosRef = collection(db, "sistemas", sistemaDoc.id, "comentarios");
+            const qTusComentarios = query(comentariosRef, where("autorId", "==", userId));
+            const snapTusComentarios = await getDocs(qTusComentarios);
 
-        // Limpiar colecciones
-        const colecciones = ["sistemas", "notificaciones"];
+            snapTusComentarios.forEach(comenDoc => {
+                console.log(`   🗑️ Borrando tu comentario en sistema: ${sistemaDoc.id}`);
+                batch.delete(comenDoc.ref);
+            });
 
-        for (const nombreCol of colecciones) {
-            console.log(`🔍 Buscando documentos en la colección: [${nombreCol}] donde usuarioId == ${userId}`);
-            
-            // IMPORTANTE: Verifica si en tu DB es "usuarioId" o "creadorId"
-            const q = query(collection(db, nombreCol), where("creadorId", "==", userId));
-            const snapshot = await getDocs(q);
-            
-            console.log(`📊 Encontrados ${snapshot.size} documentos en [${nombreCol}]`);
-
-            snapshot.forEach((documento) => {
-                console.log(`   - Marcando para borrar ID: ${documento.id}`);
-                batch.delete(documento.ref);
+            // B. Buscar tus respuestas dentro de comentarios de otros (Array 'respuestas')
+            const todosLosComentarios = await getDocs(comentariosRef);
+            todosLosComentarios.forEach(comenDoc => {
+                const data = comenDoc.data();
+                if (data.respuestas && Array.isArray(data.respuestas)) {
+                    const tieneTuRespuesta = data.respuestas.some(r => r.autorId === userId);
+                    if (tieneTuRespuesta) {
+                        console.log(`   ➖ Quitando tu respuesta en el comentario: ${comenDoc.id}`);
+                        const nuevasRespuestas = data.respuestas.filter(r => r.autorId !== userId);
+                        batch.update(comenDoc.ref, { respuestas: nuevasRespuestas });
+                    }
+                }
             });
         }
+        // --- 1. BORRAR PERFIL (Favoritos, LikesDados, Seguidores están dentro) ---
+        // Según tu imagen, estos campos viven dentro del documento de la colección 'usuarios'
+        const userRef = doc(db, "usuarios", userId);
+        batch.delete(userRef);
+        console.log("📌 Perfil y listas de favoritos/seguidores marcados para borrar.");
 
-        console.log("📡 Enviando todos los cambios a Firebase (Commit)...");
+        // --- 2. BORRAR SISTEMAS PROPIOS ---
+        const qSistemas = query(collection(db, "sistemas"), where("creadorId", "==", userId));
+        const snapSistemas = await getDocs(qSistemas);
+        snapSistemas.forEach(d => batch.delete(d.ref));
+        console.log(`🗑️ Marcados ${snapSistemas.size} sistemas propios para eliminar.`);
+
+        // --- 3. QUITAR LIKES DE OTROS SISTEMAS ---
+        // Buscamos donde el usuario aparece en 'usuariosQueDieronLike'
+        const qLikes = query(collection(db, "sistemas"), where("usuariosQueDieronLike", "array-contains", userId));
+        const snapLikes = await getDocs(qLikes);
+        snapLikes.forEach(d => {
+            batch.update(d.ref, {
+                usuariosQueDieronLike: arrayRemove(userId),
+                likes: increment(-1)
+            });
+        });
+        console.log(`➖ Removidos likes en ${snapLikes.size} sistemas ajenos.`);
+
+        // A. BUSCAR A LAS PERSONAS QUE TÚ SEGUÍAS
+// Para restarles un seguidor a ellos en su 'seguidoresCount'
+console.log("🔍 Buscando a quiénes seguías para restarles un seguidor...");
+const qAQuienSeguia = query(collection(db, "usuarios"), where("seguidoresCount", ">", 0)); 
+// Nota: Aquí lo ideal es obtener tu lista de 'siguiendo' antes de borrar tu perfil
+
+const miPerfilSnap = await getDoc(doc(db, "usuarios", userId));
+if (miPerfilSnap.exists()) {
+    const misSiguiendo = miPerfilSnap.data().siguiendo || [];
+    
+    console.log(`📊 Seguías a ${misSiguiendo.length} personas. Ajustando sus contadores...`);
+    
+    misSiguiendo.forEach(otroId => {
+        const otroRef = doc(db, "usuarios", otroId);
+        batch.update(otroRef, {
+            // Bajamos el contador de la persona a la que tú seguías
+            seguidoresCount: increment(-1) 
+        });
+        console.log(`   📉 Contador restado al usuario: ${otroId}`);
+    });
+}
+
+// B. BUSCAR A QUIÉNES TE SEGUÍAN A TI
+// Para borrar tu ID de sus listas de 'siguiendo'
+console.log("🔍 Buscando usuarios que te seguían para borrarte de sus listas...");
+const qQuienMeSeguia = query(collection(db, "usuarios"), where("siguiendo", "array-contains", userId));
+
+const snapMeSiguen = await getDocs(qQuienMeSeguia);
+snapMeSiguen.forEach(d => {
+    console.log(`   👤 Borrando tu ID de la lista 'siguiendo' de: ${d.id}`);
+    batch.update(d.ref, {
+        siguiendo: arrayRemove(userId)
+    });
+});
+        // --- 5. BORRAR NOTIFICACIONES ---
+        const qNotis = query(collection(db, "notificaciones"), where("paraId", "==", userId));
+        const snapNotis = await getDocs(qNotis);
+        snapNotis.forEach(d => batch.delete(d.ref));
+
+        // --- EJECUCIÓN ---
         await batch.commit();
-        
-        console.log("✅ ¡ÉXITO! Firebase confirmó el borrado total.");
-        alert("¡Tus datos han sido eliminados de la base de datos!");
-        
-        // 3. Redirección final
+        console.log("✅ Limpieza total completada en Firebase.");
+        alert("¡Cuenta y rastro eliminados con éxito!");
+
         if (window.Clerk.openUserProfile) {
-            console.log("📂 Abriendo panel de Clerk para borrado de cuenta de autenticación...");
             window.Clerk.openUserProfile();
         } else {
-            console.log("🏠 Redirigiendo al inicio...");
             window.location.href = "/";
         }
 
     } catch (error) {
-        console.error("❌ ERROR CRÍTICO EN EL BORRADO:", error);
-        alert("Error de Firebase: " + error.code + " - " + error.message);
-        
-        if (error.code === 'permission-denied') {
-            console.warn("👉 Tip: Revisa tus 'Security Rules' en Firebase. Debes tener permiso para borrar.");
-        }
+        console.error("❌ Error en el borrado:", error);
+        alert("Error: " + error.message);
     }
 };
 const firebaseConfig = { 
