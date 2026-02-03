@@ -97,7 +97,6 @@ const agregarCampoArchivo = () => {
         <textarea class="arc-codigo" placeholder="Código aquí..."></textarea>
     `;
 
-    // 2. Agregamos el evento de borrar de forma segura mediante código, no mediante HTML
     const botonBorrar = div.querySelector('.btn-remove-script');
     botonBorrar.addEventListener('click', () => {
         div.remove();
@@ -616,3 +615,4 @@ toggleArchivo,agregarCampoArchivo,darLike
 ,aplicarEnfoqueSistema,escaparHTML,generarHTMLSistemas,
 
 nuevoScriptEnSistema,eliminarScript,configurarFormulario,guardarEdicion}
+
