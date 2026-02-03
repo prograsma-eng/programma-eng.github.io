@@ -5,21 +5,17 @@ import {
   from '../firebase-config.js';
 
   import {mostrarToast} from '../app.js'
-// --- SISTEMA DE SEGUIMIENTO ---
-const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr"; // Reemplaza con tu ID real de Clerk
-// --- ABRIR/CERRAR EL DROPDOWN ---
+const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr";
 window.toggleNotificaciones = () => {
     const dropdown = document.getElementById('noti-dropdown');
     if (!dropdown) return;
     
-    // Alternamos la visibilidad
     if (dropdown.style.display === 'none' || dropdown.style.display === '') {
         dropdown.style.display = 'block';
     } else {
         dropdown.style.display = 'none';
     }
 };
-// --- SISTEMA DE SEGUIMIENTO (Optimizado para Clerk) ---
 const toggleSeguir = async (creadorId) => { 
     const user = window.Clerk?.user;
     if (!user) return;
@@ -56,8 +52,6 @@ const toggleSeguir = async (creadorId) => {
             }
             cambioRealizado = true; 
         }
-
-        // SOLO INCREMENTAMOS SI HUBO UN CAMBIO EXITOSO
         if (cambioRealizado) {
             try {
                 await updateDoc(creadorRef, { 
@@ -69,13 +63,11 @@ const toggleSeguir = async (creadorId) => {
                 }
             }
         }
-
-        // Actualización de la lista global (Local)
+        
         if (siguiendoAhora) {
             if (!window.misSiguiendoGlobal.includes(idLimpio)) {
                 window.misSiguiendoGlobal.push(idLimpio);
             }
-            // Notificación (Opcional: puedes envolverla en un try/catch)
             addDoc(collection(db, "notificaciones"), {
                 paraId: idLimpio,
                 nombreEmisor: user.fullName,
@@ -89,11 +81,9 @@ const toggleSeguir = async (creadorId) => {
         }
 
     } catch (e) {
-        console.error("Error en toggleSeguir:", e);
     }
 };
 
-// --- ESCUCHA DE NOTIFICACIONES (Sin Errores en Consola) ---
 window.rastrearActividad = () => {
     const user = window.Clerk?.user;
     if (!user) return;
@@ -121,20 +111,16 @@ window.rastrearActividad = () => {
 
         snap.docs.forEach(d => {
             const data = d.data();
-            // Creamos la llave basada en emisor, mensaje y tipo (sin contar la fecha)
             const llaveCuerpo = `${data.nombreEmisor}-${data.mensaje}-${data.tipo}`;
 
             if (!registrosVistos.has(llaveCuerpo)) {
                 registrosVistos.add(llaveCuerpo);
                 notificacionesUnicas.push({ id: d.id, ...data });
             } else {
-                // DETECCIÓN DE DUPLICADO: Borrar de la base de datos físicamente
-                console.log("Limpiando duplicado detectado:", d.id);
                 deleteDoc(doc(db, "notificaciones", d.id)).catch(err => console.error("Error limpieza:", err));
             }
         });
 
-        // Actualizar UI solo con las únicas
         if (countBadge) {
             countBadge.textContent = notificacionesUnicas.length;
             countBadge.style.display = notificacionesUnicas.length > 0 ? 'flex' : 'none';
@@ -170,7 +156,6 @@ window.resolverReporte = async (reporteId, sistemaId) => {
     if (!confirmar) return;
 
     try {
-        // 1. Obtener datos del sistema ANTES de borrarlo
         const sistemaRef = doc(db, "sistemas", sistemaId);
         const sistemaSnap = await getDoc(sistemaRef);
         
@@ -179,9 +164,8 @@ window.resolverReporte = async (reporteId, sistemaId) => {
             const dueñoId = data.creadorId;
             const tituloSistema = data.titulo || "Tu sistema";
 
-            // 2. Enviar notificación de baneo al usuario
             await addDoc(collection(db, "notificaciones"), {
-                paraId: dueñoId, // Campo correcto según tus fotos de Firebase
+                paraId: dueñoId,
                 titulo: "Sistema Eliminado",
                 mensaje: `Tu sistema "${tituloSistema}" ha sido eliminado por infringir las normas de la comunidad tras varios reportes.`,
                 tipo: "moderacion",
@@ -189,26 +173,21 @@ window.resolverReporte = async (reporteId, sistemaId) => {
                 leida: false
             });
 
-            // 3. Eliminar el sistema
             await deleteDoc(sistemaRef);
         }
 
-        // 4. Eliminar el reporte del panel de admin
         await deleteDoc(doc(db, "reportes", reporteId)); 
         
         alert("Sistema eliminado y usuario notificado.");
         if (typeof cargarPanelAdmin === 'function') cargarPanelAdmin();
 
     } catch (error) {
-        console.error("Error en moderación:", error);
     }
 };
-// --- FUNCIÓN PARA ELIMINAR ---
 window.eliminarNotificacion = async (notiId) => {
     try {
         await deleteDoc(doc(db, "notificaciones", notiId));
     } catch (error) {
-        console.error("Error al borrar notificación:", error);
     }
 };
 
@@ -233,10 +212,9 @@ window.reportarSistema = async (id, titulo) => {
             fecha: serverTimestamp()
         });
         alert("🚩 Reporte enviado correctamente.");
-    } catch (error) { alert("Error al enviar reporte."); }
+    } catch (error) {  }
 };
 
-// --- UTILIDADES ---
 window.copiarCodigo = (id) => {
     const el = document.getElementById(`edit-${id}`);
     if (!el) return;
@@ -257,7 +235,7 @@ window.descargarSistema = async function(sistemaId) {
             link.download = `${data.titulo}.zip`;
             link.click();
         });
-    } catch (e) { alert("Error al descargar."); }
+    } catch (e) {}
 };
 
 window.buscarPersonasApartado = async () => {
@@ -271,7 +249,7 @@ window.buscarPersonasApartado = async () => {
 
     try {
         const snap = await getDocs(collection(db, "usuarios"));
-        resultadosDiv.innerHTML = ""; // Limpiamos antes de empezar
+        resultadosDiv.innerHTML = "";
 
         const encontrados = snap.docs
             .map(doc => doc.data())
@@ -286,56 +264,48 @@ window.buscarPersonasApartado = async () => {
         }
 
         encontrados.forEach(u => {
-            // Creamos el contenedor del perfil
             const item = document.createElement('div');
             item.className = "perfil-item";
             item.style.cssText = "display:flex; align-items:center; gap:10px; background:#1a1a1a; padding:10px; border-radius:10px; cursor:pointer; margin-bottom:5px; border:1px solid #333;";
 
-            // Evento de clic SEGURO para el CSP
             item.addEventListener('click', () => {
                 if (window.verPerfil) window.verPerfil(u.id);
             });
 
-            // Creamos la imagen
             const img = document.createElement('img');
             img.src = u.foto || 'https://via.placeholder.com/40';
             img.style.cssText = "width:40px; height:40px; border-radius:50%; object-fit:cover;";
             
-            // Reemplazo del onerror: si falla la imagen, ocultamos el item
             img.addEventListener('error', () => {
                 item.style.display = 'none';
             });
 
-            // Contenedor de texto
             const info = document.createElement('div');
             info.innerHTML = `
                 <div style="color:white; font-weight:bold; font-size:0.9rem;">${u.nombre}</div>
                 <div style="color:#007bff; font-size:0.7rem;">${u.seguidoresCount || 0} seguidores</div>
             `;
 
-            // Armamos el elemento
             item.appendChild(img);
             item.appendChild(info);
             resultadosDiv.appendChild(item);
         });
 
-    } catch (e) { 
-        console.error("Error en búsqueda:", e); 
+    } catch (e) { ; 
     }
 };
-// Vinculamos el buscador de forma externa
 document.addEventListener('DOMContentLoaded', () => {
     const inputPersona = document.getElementById('input-persona');
     if (inputPersona) {
         inputPersona.addEventListener('input', window.buscarPersonasApartado);
     }
 
-    // Aprovechamos para arreglar el botón de eliminar rastro
     const btnEliminar = document.getElementById('btn-eliminar-rastro');
     if (btnEliminar) {
         btnEliminar.addEventListener('click', window.eliminarCuentaTotalmente);
     }
 });
 window.verPerfil = (id) => window.location.href = `perfil.html?id=${id}`;
+
 
 export{toggleSeguir}
