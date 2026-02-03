@@ -112,7 +112,7 @@ async function inicializarSistemaGlobal() {
         window.misSiguiendoGlobal = data.siguiendo || [];
         
         console.log("🔄 Perfil sincronizado:", window.misSiguiendoGlobal);
-
+        finalizarCarga()
         if (window.AppStatus.uiReady) {
             // 1. Volvemos a dibujar la interfaz (esto crea spans con "0")
             renderizar();
@@ -470,6 +470,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         console.log("✅ Buscador de usuarios vinculado correctamente.");
     }
+});
+document.getElementById('noti-btn')?.addEventListener('click', () => {
+    window.toggleNotificaciones()
 });
 // Desactivar el clic derecho (opcional)
 //document.addEventListener('contextmenu', event => event.preventDefault());
