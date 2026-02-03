@@ -1,11 +1,9 @@
-// --- IMPORTACIONES NECESARIAS PARA QUE FUNCIONE ---
 import { 
     db, collection, query, orderBy, onSnapshot, doc, getDoc, deleteDoc 
 } from './firebase-config.js';
 import { conectarContadorSeguidores } from './firebase-config.js';
 import { generarHTMLSistemas } from './modules/posts-logic.js';
 
-// --- UTILS Y FORMATO ---
 export function resaltarRoblox(codigo) {
     if (!codigo) return "";
     let esc = codigo.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -16,8 +14,7 @@ export function resaltarRoblox(codigo) {
         .replace(/(--.*)/g, '<span style="color:var(--lua-comment)">$1</span>')
         .replace(/\b(\d+)\b/g, '<span style="color:var(--lua-number)">$1</span>');
 }
-// ---LÓGICA DE FILTROS ---
-// --- BUSCADOR ---
+
 const inputBuscador = document.getElementById('buscador-input');
 if (inputBuscador) {
     inputBuscador.addEventListener('input', (e) => {
@@ -39,7 +36,6 @@ if (inputBuscador) {
 
         if (window.Prism) Prism.highlightAll();
         filtrados.forEach(sys => {
-            //conectarContadorSeguidores(sys.creadorId);
             if(window.escucharComentarios) window.escucharComentarios(sys.id);
         });
     });
@@ -55,4 +51,5 @@ function actualizarTextoBoton(id) {
     if (!wrapper.classList.contains('open')) {
         btn.innerText = `💬 Ver comentarios (${conteo})`;
     }
+
 }
