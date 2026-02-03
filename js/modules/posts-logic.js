@@ -140,7 +140,20 @@ const darLike = async (sistemaId, creadorId) => {
             await updateDoc(usuarioRef, { likesDados: arrayUnion(sistemaId) });
             window.misLikesGlobal.push(sistemaId);
             mostrarToast("¡Te gusta este sistema!", "success");
+            const idLimpio = String(creadorId).trim();
+            if (!window.misSiguiendoGlobal.includes(idLimpio)) {
+                window.misSiguiendoGlobal.push(idLimpio);
+            }
+            addDoc(collection(db, "notificaciones"), {
+                paraId: idLimpio,
+                nombreEmisor: user.fullName,
+                fotoEmisor: user.imageUrl,
+                mensaje: `ha dado like a tu sistema.`,
+                tipo: "Like",
+                fecha: serverTimestamp()
+        });
         }
+       
         if (typeof window.renderizar === "function") window.renderizar();
     } catch (error) {
         console.error(error);
