@@ -4,15 +4,14 @@ import {
     auth, onAuthStateChanged, conectarContadorSeguidores 
 } from './firebase-config.js';
 
-// 2. Variables Globales
 let listaPublicaciones = [];
 let listaFavoritos = [];
-window.misFavoritosGlobal = []; // Asegúrate de que exista
-window.misSiguiendoGlobal = [];  // Asegúrate de que exista
+window.misFavoritosGlobal = []; 
+window.misSiguiendoGlobal = [];  
 window.editandoId = null; 
 let tabActual = 'publicaciones';
 let textoBusqueda = "";
-// --- ESCUCHA DE DATOS DEL USUARIO (Seguidores y Favoritos) ---
+
 const escucharDatosStudio = (userId) => {
     const usuarioRef = doc(db, "usuarios", userId);
 
@@ -20,13 +19,11 @@ const escucharDatosStudio = (userId) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // BUSCAMOS TU ID EXACTO DEL HTML: stat-favs
             const elSeguidores = document.getElementById('stat-favs');
             if (elSeguidores) {
                 elSeguidores.innerText = data.seguidoresCount || 0;
             }
 
-            // Guardamos globales para el resto del sistema
             window.misSiguiendoGlobal = data.siguiendo || [];
             window.misFavoritosGlobal = data.favoritos || [];
             
@@ -39,19 +36,16 @@ const escucharDatosStudio = (userId) => {
     });
 };
 
-// --- CARGA DE PUBLICACIONES (Likes y Conteo de Posts) ---
 function cargarPublicacionesStudio(userId) {
     const qPub = query(collection(db, "sistemas"), where("creadorId", "==", userId), orderBy("fecha", "desc"));
     
     onSnapshot(qPub, (snap) => {
         listaPublicaciones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // 1. Calculamos los totales reales de tu lista de Firebase
         const totalLikes = listaPublicaciones.reduce((acc, sys) => acc + (sys.likes || 0), 0);
         const totalPubs = listaPublicaciones.length;
         window.todosLosSistemas = listaPublicaciones;
 
-        // 2. USAMOS TUS IDS EXACTOS: stat-likes y stat-posts
         const elLikes = document.getElementById('stat-likes');
         const elPubs = document.getElementById('stat-posts');
 
@@ -61,7 +55,6 @@ function cargarPublicacionesStudio(userId) {
         renderizarSegunTab();
     });
 }
-// --- CONFIGURACIÓN DE CLERK ---
 const inicializarClerkEnStudio = () => {
     const scriptClerk = document.createElement('script');
     scriptClerk.setAttribute('data-clerk-publishable-key', 'pk_test_Z3VpZGVkLWNvbGxpZS0yOC5jbGVyay5hY2NvdW50cy5kZXYk');
@@ -74,18 +67,14 @@ const inicializarClerkEnStudio = () => {
         const configurarInterfazUsuario = async (user) => {
             window.currentUser = user;
             
-            // 1. Montar botón de usuario
             const userButtonDiv = document.getElementById('user-button');
             if (userButtonDiv) {
                 await Clerk.mountUserButton(userButtonDiv, {
                     afterSignOutUrl: "index.html",
                 });
             }
-
-            // 2. ACTIVAR ESCUCHA DE DATOS (Aquí es donde se activa)
             escucharDatosStudio(user.id);
             
-            // 3. Cargar las publicaciones del usuario
             cargarPublicacionesStudio(user.id);
         };
 
@@ -101,16 +90,11 @@ const inicializarClerkEnStudio = () => {
     document.head.appendChild(scriptClerk);
 };
 
-// Iniciar proceso
 inicializarClerkEnStudio();
-// ... (Resto de tus funciones: cambiarTab, renderizarSegunTab, etc.)
-
-// --- BUSCADOR EN TIEMPO REAL ---
 document.getElementById('input-busqueda')?.addEventListener('input', (e) => {
     textoBusqueda = e.target.value.toLowerCase();
     renderizarSegunTab();
 })
-// --- NAVEGACIÓN ---
 window.cambiarTab = (tab) => {
     tabActual = tab;
     const items = {
@@ -119,7 +103,6 @@ window.cambiarTab = (tab) => {
         'estadisticas': { id: 'tab-est', title: 'Estadísticas del canal' }
     };
 
-    // Actualizar clases UI
     Object.values(items).forEach(item => {
         document.getElementById(item.id)?.classList.remove('active');
     });
@@ -135,21 +118,18 @@ window.cambiarTab = (tab) => {
     renderizarSegunTab();
 };
 
-// --- RENDERIZADO ---
 function renderizarSegunTab() {
     const contenedor = document.getElementById('contenedor-estudio');
     if (!contenedor) return;
 
-    // Si es estadísticas, renderizamos y salimos
     if (tabActual === 'estadisticas') {
         renderizarEstadisticas(contenedor);
         return;
     }
 
-    // Cambiamos el timeout por una validación más robusta
     if (typeof window.generarHTMLSistemas !== 'function') {
         contenedor.innerHTML = `<p style="text-align:center; padding:50px; color:gray;">Cargando motor de renderizado...</p>`;
-        setTimeout(renderizarSegunTab, 500); // Reintento
+        setTimeout(renderizarSegunTab, 500);
         return;
     }
 
@@ -182,7 +162,6 @@ function renderizarSegunTab() {
     false
     )
     if (window.Prism) Prism.highlightAll();
-    // Al final de la función renderizarSegunTab, después de contenedor.innerHTML = ...
 datosFiltrados.forEach(sys => {
     if (typeof conectarContadorSeguidores === 'function') {
         conectarContadorSeguidores(sys.creadorId);
@@ -190,7 +169,6 @@ datosFiltrados.forEach(sys => {
 });
 }
 window.renderizarSegunTab = renderizarSegunTab;
-// --- GRÁFICOS ---
 function renderizarEstadisticas(contenedor) {
     const totalLikes = listaPublicaciones.reduce((acc, sys) => acc + (sys.likes || 0), 0);
     const totalPubs = listaPublicaciones.length;
@@ -231,8 +209,6 @@ contenedor.innerHTML = `
             </div>
         </div>
     `;
-
-    //if (userId) conectarContadorSeguidores(userId);
     setTimeout(crearGraficaEfectiva, 150);
 }
 function crearGraficaEfectiva() {
@@ -241,7 +217,6 @@ function crearGraficaEfectiva() {
 
     if (window.miChart) window.miChart.destroy();
 
-    // 1. Procesar datos reales: Tomar las 5 publicaciones con más likes
     const topSistemas = [...listaPublicaciones]
         .sort((a, b) => (b.likes || 0) - (a.likes || 0))
         .slice(0, 5);
@@ -249,9 +224,8 @@ function crearGraficaEfectiva() {
     const etiquetas = topSistemas.map(s => s.titulo.substring(0, 10) + "...");
     const datosLikes = topSistemas.map(s => s.likes || 0);
 
-    // 2. Crear la gráfica con datos reales
     window.miChart = new Chart(ctx, {
-        type: 'bar', // Cambiado a barras para comparar sistemas
+        type: 'bar', 
         data: {
             labels: etiquetas,
             datasets: [{
@@ -279,7 +253,6 @@ function crearGraficaEfectiva() {
         }
     });
 }
-// --- FUNCIÓN DAR LIKE (Cumpliendo tus reglas) ---
 const cargarSistemasFavoritos = async (listaIds) => {
     if (!listaIds || listaIds.length === 0) {
         listaFavoritos = [];
@@ -288,7 +261,6 @@ const cargarSistemasFavoritos = async (listaIds) => {
     }
 
     try {
-        // Consultamos la colección 'sistemas' buscando solo los IDs que tenemos en favoritos
         const q = query(collection(db, "sistemas"), where("__name__", "in", listaIds));
         
         onSnapshot(q, (snap) => {
@@ -296,14 +268,11 @@ const cargarSistemasFavoritos = async (listaIds) => {
                 id: doc.id,
                 ...doc.data()
             }));
-            
-            // Si estamos en la pestaña de favoritos, redibujamos
             if (tabActual === 'favoritos') {
                 renderizarSegunTab();
             }
         });
     } catch (error) {
-        console.error("Error cargando detalles de favoritos:", error);
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
@@ -320,4 +289,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabEstadisticas) {
         tabEstadisticas.addEventListener('click', () => cambiarTab('estadisticas'));
     }
+
 });
