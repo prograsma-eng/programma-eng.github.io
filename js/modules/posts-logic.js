@@ -31,8 +31,6 @@ export const mostrarToast = (mensaje, tipo = 'success') => {
 import {toggleSeccionComentarios} from './comments-logic.js'
 import {toggleSeguir} from './social-logic.js'
 const LIMITE_PALABRAS = 50;
-// --- ARREGLO DE REFERENCIAS GLOBALES ---
-// Esto asegura que si todosLosSiste000mas no está definido aquí, lo busque en el objeto global
 const obtenerSistemas = () => window.todosLosSistemas || [];
 
 
@@ -57,7 +55,6 @@ const  guardarTitulo = async (id) => {
         await updateDoc(sistemaRef, { titulo: nuevoTitulo });
         mostrarToast("Título actualizado", "success");
     } catch (e) {
-        console.error(e);
         mostrarToast("Error al guardar título", "error");
     }
 };
@@ -68,7 +65,7 @@ const  guardarTitulo = async (id) => {
     if (wrap.style.display === "none" || !wrap.style.maxHeight || wrap.style.maxHeight === "0px") {
         wrap.style.display = "block";
         setTimeout(() => {
-            wrap.style.maxHeight = "1000px"; // Aumentado para códigos largos
+            wrap.style.maxHeight = "1000px";
             wrap.style.opacity = "1";
         }, 10);
     } else {
@@ -87,7 +84,6 @@ const agregarCampoArchivo = () => {
     const div = document.createElement('div');
     div.className = "archivo-input-item";
     
-    // 1. Definimos el HTML SIN ningún "onclick"
     div.innerHTML = `
         <div class="archivo-input-header">
             <input type="text" class="arc-nombre" placeholder="Nombre (ej: Loader)" required style="flex:2;">
@@ -167,11 +163,8 @@ const eliminarSistema = async (sysId) => {
 
     try {
         await deleteDoc(doc(db, "sistemas", sysId));
-        console.log("✅ Sistema eliminado");
-        // Refrescar la lista
         if (typeof window.renderizar === "function") window.renderizar();
     } catch (error) {
-        console.error("Error al eliminar:", error);
         alert("No tienes permisos para eliminar este sistema.");
     }
 };
@@ -190,7 +183,6 @@ const toggleFavorito = async (sistemaId) => {
         if (!sistemaSnap.exists()) return;
         const datosSistema = sistemaSnap.data();
 
-        // REGLA: No puedes dar favorito a lo tuyo
         if (datosSistema.creadorId === user.id) {
             return alert("❌ No puedes marcar como favorito tus propios sistemas.");
         }
@@ -199,12 +191,10 @@ const toggleFavorito = async (sistemaId) => {
         const yaEsFavorito = favoritos.includes(sistemaId);
 
         if (yaEsFavorito) {
-            // QUITAR DE FAVORITOS
             await updateDoc(userRef, { favoritos: arrayRemove(sistemaId) });
             await updateDoc(sistemaRef, { favsCount: increment(-1) });
             window.misFavoritosGlobal = window.misFavoritosGlobal.filter(id => id !== sistemaId);
         } else {
-            // AÑADIR A FAVORITOS
             await updateDoc(userRef, { favoritos: arrayUnion(sistemaId) });
             await updateDoc(sistemaRef, { favsCount: increment(1) });
             if (!window.misFavoritosGlobal) window.misFavoritosGlobal = [];
@@ -213,7 +203,6 @@ const toggleFavorito = async (sistemaId) => {
         
         if (typeof window.renderizar === "function") window.renderizar();
     } catch (error) {
-        console.error("Error en favorito:", error);
     }
 };
 
@@ -225,7 +214,6 @@ const compartirSistemaIndividual = async (sistemaId, creadorId) => {
         await navigator.clipboard.writeText(urlCompartir);
         mostrarToast("🔗 Enlace copiado al portapapeles", "success");
     } catch (err) {
-        console.error('Error al copiar: ', err);
         mostrarToast("No se pudo copiar el enlace", "error");
     }
 };
@@ -248,12 +236,11 @@ const escaparHTML = (str) => {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[m]));
 };
-  const iconos = {
-                        'Script': '🟩',
-                        'localscript': '🟦',
-                        'modulescript': '🟪'
-                         };
-// --- FUNCIÓN DE GENERACIÓN DE HTML ---
+const iconos = {
+'Script': '🟩',
+'localscript': '🟦',
+'modulescript': '🟪'
+ };
 
 function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostrarSeguidores = true) {
     if (!lista || lista.length === 0) return `<p class='text-center text-muted'>No se encontraron sistemas ⚙️.</p>`;
@@ -261,7 +248,6 @@ function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostra
     const idPerfilUrl = new URLSearchParams(window.location.search).get("id");
 
     const htmlFinal = lista.map(sys => {
-        // Filtro de perfil
         if (idPerfilUrl && sys.creadorId !== idPerfilUrl) return '';
 
         const idCreadorRef = String(sys.creadorId).trim();
@@ -269,7 +255,6 @@ function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostra
         const yaLoSigo = misSiguiendo.some(id => String(id).trim() === idCreadorRef);
         const esFavorito = window.misFavoritosGlobal?.includes(sys.id);
 
-        // Renderizado de archivos (Scripts)
         const htmlArchivos = sys.archivos.map((arc, i) => {
             const idArchivo = `${sys.id}-${i}`; 
             const tipoClase = `type-${arc.tipo.toLowerCase().replace(/\s+/g, '')}`;
@@ -297,7 +282,6 @@ function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostra
             </div>`;
         }).join('');
 
-        // Renderizado del contenedor principal del sistema
         return `
         <div class="sistema-container ${window.editandoId === sys.id ? 'editando' : ''}" id="sistema-${sys.id}">
             <div class="sistema-header">
@@ -392,57 +376,42 @@ function generarHTMLSistemas(lista, misSiguiendo = [], misFavoritos = [], mostra
     return htmlFinal.replace(/>\s+</g, '><').trim();
 }
 const guardarEdicion = async (sysId, arcIndex) => {
-    console.log("🚀 Iniciando guardado para:", sysId, "en índice:", arcIndex);
     
     const el = document.getElementById(`edit-${sysId}-${arcIndex}`);
     if (!el) {
         alert("❌ Error: No se encontró el elemento HTML con el código.");
-        console.error("ID buscado:", `edit-${sysId}-${arcIndex}`);
         return;
     }
     
     const nuevoCodigo = el.innerText;
-    console.log("📝 Código capturado (primeros 20 caracteres):", nuevoCodigo.substring(0, 20));
-
-    // Debug de listas
-    console.log("🔍 Buscando sistema en listas locales...");
-    console.log("Contenido de window.todosLosSistemas:", window.todosLosSistemas);
-    
-    // Intentamos buscar en cualquier lista disponible
     const sistema = (window.todosLosSistemas || []).find(s => s.id === sysId);
 
     if (!sistema) {
-        console.error("❌ SISTEMA NO ENCONTRADO EN LOCAL.");
         alert("Fallo local: El sistema no está en la memoria del navegador. ¿Se cargó la lista?");
         return;
     }
 
     try {
         const sistemaRef = doc(db, "sistemas", sysId);
-        console.log("📡 Enviando a Firebase...");
         
         const nuevosArchivos = [...sistema.archivos];
         nuevosArchivos[arcIndex] = { ...nuevosArchivos[arcIndex], codigo: nuevoCodigo };
 
         await updateDoc(sistemaRef, { archivos: nuevosArchivos });
-        
-        console.log("✅ Firebase respondió: OK");
+
         mostrarToast("✅ Cambios guardados", "success");
         
         sistema.archivos = nuevosArchivos;
         if (typeof window.renderizarSegunTab === "function") window.renderizarSegunTab();
         
     } catch (error) {
-        console.error("❌ ERROR DE FIREBASE:", error);
         alert("Error de red o permisos: " + error.message);
     }
 };
 const nuevoScriptEnSistema = async (sysId) => {
-    // 1. Pedir el nombre del archivo
     const nombre = prompt("Nombre del archivo (ej: logica, utilidades):");
     if (!nombre) return;
 
-    // 2. Pedir el tipo de script con una pequeña validación
     const seleccion = prompt("Elige el tipo: \n1. script\n2. modulescript\n3. localscript").toLowerCase().trim();
     
     let tipoFinal = "";
@@ -454,30 +423,22 @@ const nuevoScriptEnSistema = async (sysId) => {
         return;
     }
 
-    // 3. Buscar el sistema en tus listas locales
     const sistema = (window.todosLosSistemas || []).find(s => s.id === sysId);
     
     if (!sistema) {
-        console.error("No se encontró el sistema con ID:", sysId);
         return;
     }
-
-    // 4. Crear el nuevo array de archivos
     const nuevosArchivos = [...(sistema.archivos || []), { 
         nombre: nombre, 
-        tipo: tipoFinal, // Aquí se guarda la elección
+        tipo: tipoFinal, 
         codigo: `-- Nuevo ${tipoFinal}\nprint("Hola Mundo")` 
     }];
 
     try {
-        // 5. Actualizar en Firebase
         await updateDoc(doc(db, "sistemas", sysId), { 
             archivos: nuevosArchivos 
         });
         
-        console.log(`✅ ${tipoFinal} añadido con éxito.`);
-        
-        // Refrescar la UI si tienes la función disponible
         if (typeof window.renderizar === "function") window.renderizar();
 
     } catch (error) {
@@ -493,24 +454,18 @@ const eliminarScript = async (sysId, indiceScript) => {
         const docSnap = await getDoc(sistemaRef);
 
         if (!docSnap.exists()) {
-            console.error("No se encontró el sistema");
             return;
         }
 
         const data = docSnap.data();
         let archivosActuales = data.archivos || [];
 
-        // Eliminamos el script usando su índice en el array
         archivosActuales.splice(indiceScript, 1);
 
-        // Actualizamos el documento en Firebase
         await updateDoc(sistemaRef, { 
             archivos: archivosActuales 
         });
 
-        console.log("✅ Script eliminado correctamente");
-
-        // Refrescar el editor o la UI
         if (typeof window.cargarEditor === "function") {
             window.cargarEditor(sysId);
         } else if (typeof window.renderizar === "function") {
@@ -518,51 +473,40 @@ const eliminarScript = async (sysId, indiceScript) => {
         }
 
     } catch (error) {
-        console.error("Error al eliminar script:", error);
         alert("No se pudo eliminar el script.");
     }
 };
 document.addEventListener('click', async (e) => {
     const target = e.target;
 
-    // --- NUEVOS: MANEJO DE SCRIPTS Y EDICIÓN ---
-    
-    // Copiar Código (Nuevo)
     const btnCopy = target.closest('.js-copy-code');
     if (btnCopy) {
-        e.stopPropagation(); // Evita que se cierre el acordeón al copiar
+        e.stopPropagation(); 
         window.copiarCodigo(btnCopy.dataset.id);
     }
 
-    // Guardar Edición de un script (Nuevo)
     const btnSave = target.closest('.js-save-edit');
     if (btnSave) {
         e.stopPropagation();
         window.guardarEdicion(btnSave.dataset.sysid, btnSave.dataset.index);
     }
 
-    // Eliminar un script individual (Nuevo)
     const btnDelScript = target.closest('.js-delete-script');
     if (btnDelScript) {
         e.stopPropagation();
         window.eliminarScript(btnDelScript.dataset.sysid, btnDelScript.dataset.index);
     }
 
-    // --- NUEVOS: LINKS Y REPORTES ---
-
-    // Reportar Sistema (Nuevo)
     const btnReport = target.closest('.js-reportar');
     if (btnReport) {
         window.reportarSistema(btnReport.dataset.id, btnReport.dataset.titulo);
     }
 
-    // Link a Perfiles (Nuevo - reemplaza el onclick de las fotos)
     const linkPerfil = target.closest('.js-perfil-link');
     if (linkPerfil) {
         window.location.href = linkPerfil.dataset.url;
     }
 
-    // --- LOS QUE YA TENÍAS (Mantenidos) ---
 
     const btnLike = target.closest('.js-like');
     if (btnLike) darLike(btnLike.dataset.id, btnLike.dataset.creador);
@@ -594,8 +538,6 @@ document.addEventListener('click', async (e) => {
     const VerComentarios = target.closest('.js-ver-comentarios');
     if (VerComentarios) toggleSeccionComentarios(VerComentarios.dataset.id);
 });
-// Manejo de formularios de comentarios
-// Manejo de guardado de título al perder el foco (onblur)
 document.addEventListener('focusout', (e) => {
     if (e.target.classList.contains('js-titulo-editable')) {
         guardarTitulo(e.target.dataset.id);
@@ -608,7 +550,6 @@ document.addEventListener('focusout', (e) => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Prioridad: 1. Clerk cargado, 2. Variable global window
         const user = (window.Clerk && window.Clerk.user) || window.currentUser;
         if (!user) return;
         
@@ -628,10 +569,6 @@ document.addEventListener('focusout', (e) => {
             alert("Espera a que cargue tu sesión o inicia sesión.");
             return;
         }
-
-        // ... resto de tu código de recolección de datos ...
-        console.log("Intentando publicar sistema de:", user.fullName);
-
             const titulo = document.getElementById('sys-titulo').value;
             const tag = document.getElementById('sys-tag').value;
             const bloquesArchivos = document.querySelectorAll('.archivo-input-item');
@@ -662,7 +599,6 @@ document.addEventListener('focusout', (e) => {
                 alert("🚀 ¡Sistema publicado con éxito!");
                 window.location.href = "index.html"; 
             } catch (error) {
-                console.error("Error al subir:", error);
                 alert("Error al subir.");
                 const btn = e.target.querySelector('.btn-submit');
                 btn.innerText = "Publicar Sistema";
@@ -678,4 +614,5 @@ export{obtenerSistemas,toggleModoEditor,guardarTitulo,
 toggleArchivo,agregarCampoArchivo,darLike
 ,eliminarSistema,toggleFavorito,compartirSistemaIndividual
 ,aplicarEnfoqueSistema,escaparHTML,generarHTMLSistemas,
+
 nuevoScriptEnSistema,eliminarScript,configurarFormulario,guardarEdicion}
