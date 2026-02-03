@@ -364,6 +364,20 @@ span[id^="count-seguidores-"] {
     margin:  12px;
 }
 
+.js-ver-comentarios {
+    background-color: #1a1a1a;
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
 .js-nuevo-script {
     background: #1a1a1a;
     color: #ffffff;

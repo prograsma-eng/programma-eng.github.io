@@ -411,16 +411,14 @@ header {
     font-weight: bold;
 }
 
-.js-ver-comentarios {
-    background-color: #1a1a1a;
-    color: var(--accent);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    border: 1px solid #333;
-    margin-left: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: bold;
+#btn-eliminar-rastro {
+    background: red;
+    color: #000;
+    margin-top: 15px;
+    border: none;
+    border-radius: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(252, 104, 104, 0.37);
+    text-decoration:none;
 }
