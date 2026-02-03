@@ -2,12 +2,9 @@ import {
     db, collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, arrayUnion 
 } from '../firebase-config.js';
 
-// --- CONFIGURACIÓN ---
-const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr"; // Reemplaza con tu ID real de Clerk
+const MI_ADMIN_ID = "user_38lpub6nAzQUEUYMSBDzTcnVNdr";
 
-// --- ENVIAR COMENTARIO ---
 window.enviarComentario = async (e, id) => {
-    // Si el botón ya está desactivado, salimos (evita doble clic)
     const btn = e.target.querySelector('button');
     if (btn && btn.disabled) return; 
 
@@ -18,11 +15,9 @@ window.enviarComentario = async (e, id) => {
     const inp = form.querySelector('input');
     const texto = inp.value.trim();
 
-    // 1. Validaciones iniciales
     if (!user) return alert("Inicia sesión para comentar.");
     if (!texto) return;
 
-    // 2. Control de límite de palabras
     const LIMITE_PALABRAS = 50; 
     const palabras = texto.split(/\s+/).filter(p => p.length > 0);
 
@@ -30,7 +25,6 @@ window.enviarComentario = async (e, id) => {
         return alert(`⚠️ Tu comentario es muy largo. Máximo ${LIMITE_PALABRAS} palabras.`);
     }
 
-    // 3. Bloqueo de UI para evitar spam (Anti-Spam)
     if (btn) btn.disabled = true;
 
     try {
@@ -38,9 +32,8 @@ window.enviarComentario = async (e, id) => {
         const sistema = sistemas.find(s => s.id === id);
         if (!sistema) throw new Error("Sistema no encontrado");
 
-        // 4. Guardar comentario
         await addDoc(collection(db, "sistemas", id, "comentarios"), {
-            texto: texto, // Guardamos el texto ya con trim()
+            texto: texto, 
             autor: user.fullName || "Usuario",
             autorId: user.id,
             foto: user.imageUrl || "",
@@ -49,7 +42,6 @@ window.enviarComentario = async (e, id) => {
             fecha: serverTimestamp()
         });
 
-        // 5. Notificación al creador
         if (sistema.creadorId !== user.id) {
             await addDoc(collection(db, "notificaciones"), {
                 paraId: sistema.creadorId,
@@ -60,7 +52,6 @@ window.enviarComentario = async (e, id) => {
             });
         }
 
-        // 6. Limpieza y Feedback
         inp.value = '';
         
         const wrapper = document.getElementById(`wrapper-${id}`);
@@ -74,7 +65,6 @@ window.enviarComentario = async (e, id) => {
         console.error("Error al comentar:", error);
         alert("Hubo un error al publicar tu comentario.");
     } finally {
-        // Reactivar el botón pase lo que pase
         if (btn) btn.disabled = false;
     }
 };
@@ -90,19 +80,16 @@ window.borrarComentario = async (sysId, comId) => {
         if (!snap.exists()) return;
 
         const data = snap.data();
-        // Verificamos si es el dueño del comentario o el administrador
         const esAutorizado = user.id === data.autorId || user.id === ADMIN_ID;
 
         if (esAutorizado) {
             if (confirm("¿Estás seguro de que quieres eliminar este comentario?")) {
                 await deleteDoc(comRef);
-                console.log("Comentario eliminado");
             }
         } else {
             alert("No tienes permiso para borrar este comentario.");
         }
     } catch (error) {
-        console.error("Error al borrar:", error);
     }
 };
 
@@ -119,7 +106,6 @@ window.likeComentario = async (sysId, comId) => {
         const likes = snap.data().likes || [];
         const yaDioLike = likes.includes(user.id);
 
-        // Usamos arrayUnion/arrayRemove para evitar conflictos de escritura
         await updateDoc(ref, {
             likes: yaDioLike ? arrayRemove(user.id) : arrayUnion(user.id)
         });
@@ -128,7 +114,7 @@ window.likeComentario = async (sysId, comId) => {
         console.error("Error al procesar like en comentario:", error);
     }
 };
-// --- RESPUESTAS ---
+
 window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
     const user = window.currentUser || (window.Clerk && window.Clerk.user);
     if (!user) return alert("Inicia sesión para responder.");
@@ -136,7 +122,6 @@ window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
     let txt = prompt(`Respondiendo a ${nombre}:`);
     if (!txt || !txt.trim()) return;
 
-    // --- 1. LÍMITE DE PALABRAS ---
     const LIMITE_PALABRAS_RES = 50; 
     const palabras = txt.trim().split(/\s+/).filter(p => p.length > 0);
 
@@ -144,9 +129,7 @@ window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
         return alert(`⚠️ La respuesta es muy larga. Máximo ${LIMITE_PALABRAS_RES} palabras.`);
     }
 
-    // --- 2. PREVENCIÓN XSS (Limpieza básica) ---
-    // Aunque ya usamos escaparHTML al mostrarlo, es mejor limpiar antes de guardar
-    const textoSeguro = txt.replace(/<[^>]*>?/gm, ''); // Elimina etiquetas HTML como <script>
+    const textoSeguro = txt.replace(/<[^>]*>?/gm, '');
 
     const ref = doc(db, "sistemas", sysId, "comentarios", comId);
     try {
@@ -154,14 +137,12 @@ window.mostrarInputRespuesta = async (sysId, comId, nombre) => {
             respuestas: arrayUnion({
                 autor: user.fullName || "Usuario",
                 autorId: user.id,
-                texto: textoSeguro, // Guardamos el texto limpio
+                texto: textoSeguro,
                 likes: [],
                 fecha: Date.now()
             })
         });
-        console.log("✅ Respuesta enviada de forma segura.");
     } catch (error) {
-        console.error("Error al responder:", error);
     }
 };
 async function borrarRespuesta(sysId, comId, idx) {
@@ -173,7 +154,6 @@ async function borrarRespuesta(sysId, comId, idx) {
         const snap = await getDoc(ref);
         if (snap.exists()) {
             const resActuales = [...(snap.data().respuestas || [])];
-            // Solo el autor o el admin pueden borrar
             if (resActuales[idx].autorId === user.id || user.id === MI_ADMIN_ID) {
                 resActuales.splice(idx, 1); 
                 await updateDoc(ref, { respuestas: resActuales });
@@ -181,7 +161,7 @@ async function borrarRespuesta(sysId, comId, idx) {
                 alert("No tienes permiso.");
             }
         }
-    } catch (e) { console.error("Error al borrar respuesta:", e); }
+    } catch (e) {}
 }
 
 window.toggleVerMasRespuestas = (comId) => {
@@ -190,7 +170,6 @@ window.toggleVerMasRespuestas = (comId) => {
     if (!extras.length) return;
     
     const estaOculto = extras[limite] ? extras[limite].style.display === 'none' : true; 
-    // Nota: simplificado para el toggle
     extras.forEach((el, idx) => { if(idx >= 2) el.style.display = el.style.display === 'none' ? 'block' : 'none'; });
     if (btn) btn.innerText = extras[2].style.display === 'block' ? "Ocultar respuestas" : `Ver más respuestas...`;
 };
@@ -214,7 +193,6 @@ function toggleVerMasRespuestas(comId) {
     const btn = document.getElementById(`btn-ver-${comId}`);
     if (!extras.length) return;
     
-    // El límite que usaste arriba fue 2
     const limiteEfectivo = 2;
     const estaOculto = extras[limiteEfectivo] ? extras[limiteEfectivo].style.display === 'none' : true;
 
@@ -226,7 +204,6 @@ function toggleVerMasRespuestas(comId) {
     
     if (btn) btn.innerText = estaOculto ? "🔼 Ocultar respuestas" : `Ver más respuestas...`;
 }
-// --- ESCUCHAR TIEMPO REAL (VERSIÓN FINAL) ---
 const desuscripcionesComentarios = {};
 
 export const escucharComentarios = (sistemaId) => {
@@ -325,37 +302,31 @@ export const escucharComentarios = (sistemaId) => {
                 </div>`;
         }).join('');
     }, (error) => {
-        console.error("Error en tiempo real (comentarios):", error);
     });
 };
 document.addEventListener('click', (e) => {
     const t = e.target;
-
-    // Like a un comentario
     const btnLikeCom = t.closest('.js-like-com');
     if (btnLikeCom) {
         window.likeComentario(btnLikeCom.dataset.sys, btnLikeCom.dataset.com);
     }
 
-    // Borrar un comentario
     const btnDelCom = t.closest('.js-del-com');
     if (btnDelCom) {
         window.borrarComentario(btnDelCom.dataset.sys, btnDelCom.dataset.com);
     }
 
-    // Responder a un comentario
     const btnReply = t.closest('.js-reply-com');
     if (btnReply) {
         window.mostrarInputRespuesta(btnReply.dataset.sys, btnReply.dataset.com, btnReply.dataset.autor);
     }
 
-    // Borrar una respuesta
+
     const btnDelRes = t.closest('.js-del-res');
     if (btnDelRes) {
         window.borrarRespuesta(btnDelRes.dataset.sys, btnDelRes.dataset.com, btnDelRes.dataset.idx);
     }
 
-    // Ver más respuestas (Toggle)
     const btnVerMas = t.closest('.js-ver-mas-res');
     if (btnVerMas) {
         window.toggleVerMasRespuestas(btnVerMas.dataset.com);
@@ -369,17 +340,17 @@ document.addEventListener('submit', (e) => {
         window.enviarComentario(e, sysId);
     }
 });
-//window.escucharComentarios = escucharComentarios;
 window.borrarComentario = borrarComentario;
 window.likeComentario = likeComentario;
 window.mostrarInputRespuesta = mostrarInputRespuesta;
 window.borrarRespuesta = borrarRespuesta;
 window.toggleVerMasRespuestas = toggleVerMasRespuestas;
 window.escucharComentarios = escucharComentarios;
-// Asegúrate de que window también use la versión corregida
+
 export const escaparHTML = (str) => {
     if (!str) return "";
     return str.replace(/[&<>"']/g, m => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
     }[m]));
+
 }
