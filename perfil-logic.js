@@ -30,23 +30,34 @@ async function ejecutarCargaPerfil() {
         
         // 1. Si el header no existe, lo creamos
         if (!document.getElementById('perfil-card-main')) {
-            header.innerHTML = `
-                <div class="perfil-header-card" id="perfil-card-main">
-                    <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px;">
-                        <button class="btn-volver" onclick="window.location.href='index.html'">← Volver</button>
-                        <div id="contenedor-boton-seguir"></div>
-                    </div>
-                    <img src="${dataUser.foto || 'default-avatar.png'}" class="avatar-perfil-grande">
-                    <h1 class="nombre-perfil">${dataUser.nombre || 'Usuario'}</h1>
-                    <div class="perfil-stats">
-                        <div class="stat-item">
-                            <span id="count-seguidores-perfil" class="stat-valor">${seguidoresActuales}</span>
-                            <span class="stat-label">Seguidores</span>
-                        </div>
-                    </div>
-                </div>`;
+   header.innerHTML = `
+        <div class="perfil-header-card" id="perfil-card-main">
+            <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; gap: 10px;">
+                <button class="btn-volver" id="js-btn-volver">← Volver</button>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-compartir" id="js-btn-compartir">🔗 Compartir Perfil</button>
+                    <div id="contenedor-boton-seguir"></div>
+                </div>
+            </div>
             
-            verificarEstadoSeguimiento();
+            <img src="${dataUser.foto || 'default-avatar.png'}" class="avatar-perfil-grande">
+            <h1 class="nombre-perfil">${dataUser.nombre || 'Usuario'}</h1>
+            
+            <div class="perfil-stats">
+                <div class="stat-item">
+                    <span id="count-seguidores-perfil" class="stat-valor">${seguidoresActuales}</span>
+                    <span class="stat-label">Seguidores</span>
+                </div>
+            </div>
+        </div>`;
+    
+    // ASIGNACIÓN SEGURA (Sin onclick en el HTML)
+    document.getElementById('js-btn-volver').addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+
+    verificarEstadoSeguimiento();
         } else {
             // 2. 🔥 SI YA EXISTE, actualizamos SOLO el número
             const spanContador = document.getElementById('count-seguidores-perfil');
@@ -89,37 +100,14 @@ window.renderizarBotonSeguir = function(loSigo) {
     const contenedor = document.getElementById('contenedor-boton-seguir');
     if (!contenedor) return;
 
+    // Eliminamos estilos en línea pesados y usamos clases
     contenedor.innerHTML = `
         <button class="js-seguirt ${loSigo ? 'siguiendo' : 'no-siguiendo'}" 
-            data-user="${idPerfil}"
-            style="padding: 8px 16px; border-radius: 20px; font-weight: bold; border: none; cursor: pointer;
-            background-color: ${loSigo ? '#f0f0f0' : '#000'}; 
-            color: ${loSigo ? '#555' : '#fff'};">
+            data-user="${idPerfil}">
             ${loSigo ? '❌ Dejar de seguir' : '🔔 Seguir'}
         </button>
     `;
 };
-document.addEventListener('click', async (e) => {
-    const target = e.target;
-    const btnSeguir = target.closest('.js-seguirt');
-    
-    if (btnSeguir) {
-        // Evitamos que el clic se propague a otros elementos
-        e.preventDefault();
-        e.stopImmediatePropagation(); 
-        
-        // Desactivamos el botón un segundo para evitar doble clic accidental
-        btnSeguir.style.pointerEvents = 'none';
-        btnSeguir.style.opacity = '0.5';
-        
-        await toggleSeguir(btnSeguir.dataset.user);
-        
-        // Lo reactivamos (opcional, el onSnapshot lo hará al re-renderizar el botón)
-        btnSeguir.style.pointerEvents = 'auto';
-        btnSeguir.style.opacity = '1';
-    }
-});
-
 // Esta función ya no necesita el bucle forEach porque los quitamos de las tarjetas
 function escucharSeguidores(creadorId) {
     if (!creadorId) return;
@@ -144,3 +132,26 @@ window.compartirPerfil = function() {
         alert("No se pudo copiar el enlace. Cópialo manualmente de la barra de direcciones.");
     });
 };
+// Agrega esto a tu bloque de document.addEventListener('click', ...)
+document.addEventListener('click', async (e) => {
+    const target = e.target;
+
+    // Lógica para el botón de seguir (Ya la tienes)
+    const btnSeguir = target.closest('.js-seguirt');
+    if (btnSeguir) {
+        e.preventDefault();
+        btnSeguir.style.pointerEvents = 'none';
+        btnSeguir.style.opacity = '0.5';
+        await toggleSeguir(btnSeguir.dataset.user);
+        btnSeguir.style.pointerEvents = 'auto';
+        btnSeguir.style.opacity = '1';
+        return; // Detener aquí
+    }
+
+    // Lógica para compartir perfil (Eliminando el onclick del HTML)
+    const btnCompartir = target.closest('.btn-compartir');
+    if (btnCompartir) {
+        window.compartirPerfil();
+        return;
+    }
+});
