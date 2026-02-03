@@ -20,7 +20,7 @@ window.toggleNotificaciones = () => {
     }
 };
 // --- SISTEMA DE SEGUIMIENTO (Optimizado para Clerk) ---
- const toggleSeguir = async (creadorId) => { 
+const toggleSeguir = async (creadorId) => { 
     const user = window.Clerk?.user;
     if (!user) return;
 
@@ -81,7 +81,7 @@ window.toggleNotificaciones = () => {
                 nombreEmisor: user.fullName,
                 fotoEmisor: user.imageUrl,
                 mensaje: `ha comenzado a seguirte.`,
-                tipo: "seguidores",
+                tipo: "Seguidores",
                 fecha: serverTimestamp()
             });
         } else {
@@ -96,38 +96,68 @@ window.toggleNotificaciones = () => {
 // --- ESCUCHA DE NOTIFICACIONES (Sin Errores en Consola) ---
 window.rastrearActividad = () => {
     const user = window.Clerk?.user;
-    if (!user) return; // Si no hay usuario, no activamos el listener de Firebase
+    if (!user) return;
+
+    const listaNotis = document.getElementById('lista-notificaciones');
+    const countBadge = document.getElementById('noti-count');
 
     const q = query(
         collection(db, "notificaciones"),
-        where("paraId", "==", user.id), 
+        where("paraId", "==", user.id),
         orderBy("fecha", "desc")
     );
 
     onSnapshot(q, (snap) => {
-        const listaNotis = document.getElementById('lista-notificaciones');
-        const countBadge = document.getElementById('noti-count');
         if (!listaNotis) return;
 
-        const total = snap.size;
-        if (countBadge) {
-            countBadge.innerText = total;
-            countBadge.style.display = total > 0 ? 'flex' : 'none';
+        if (snap.empty) {
+            if (countBadge) countBadge.style.display = 'none';
+            listaNotis.innerHTML = '<p style="padding:15px; color:#888; text-align:center;">Sin notificaciones</p>';
+            return;
         }
 
-        listaNotis.innerHTML = snap.empty 
-            ? '<p style="padding:15px; color:#888; text-align:center;">Sin notificaciones</p>'
-            : snap.docs.map(d => {
-                const n = d.data();
-                return `
-                    <div class="noti-item">
-                        <span><b>${n.nombreEmisor || 'Usuario'}</b> ${n.mensaje}</span>
-                        <button onclick="window.eliminarNotificacion('${d.id}')">&times;</button>
-                    </div>`;
-            }).join('');
-    }, (error) => {
-        // Silenciamos el error de permisos si Firebase aún no conecta el auth
-        console.log("Sincronizando notificaciones...");
+        const registrosVistos = new Set();
+        const notificacionesUnicas = [];
+
+        snap.docs.forEach(d => {
+            const data = d.data();
+            // Creamos la llave basada en emisor, mensaje y tipo (sin contar la fecha)
+            const llaveCuerpo = `${data.nombreEmisor}-${data.mensaje}-${data.tipo}`;
+
+            if (!registrosVistos.has(llaveCuerpo)) {
+                registrosVistos.add(llaveCuerpo);
+                notificacionesUnicas.push({ id: d.id, ...data });
+            } else {
+                // DETECCIÓN DE DUPLICADO: Borrar de la base de datos físicamente
+                console.log("Limpiando duplicado detectado:", d.id);
+                deleteDoc(doc(db, "notificaciones", d.id)).catch(err => console.error("Error limpieza:", err));
+            }
+        });
+
+        // Actualizar UI solo con las únicas
+        if (countBadge) {
+            countBadge.textContent = notificacionesUnicas.length;
+            countBadge.style.display = notificacionesUnicas.length > 0 ? 'flex' : 'none';
+        }
+
+        listaNotis.innerHTML = ''; 
+        notificacionesUnicas.forEach(n => {
+            const item = document.createElement('div');
+            item.className = 'noti-item';
+            
+            const content = document.createElement('span');
+            content.innerHTML = `<b></b> `; 
+            content.querySelector('b').textContent = n.nombreEmisor || 'Usuario';
+            content.append(document.createTextNode(` ${n.mensaje}`));
+
+            const btn = document.createElement('button');
+            btn.innerHTML = '&times;';
+            btn.onclick = () => window.eliminarNotificacion(n.id);
+
+            item.appendChild(content);
+            item.appendChild(btn);
+            listaNotis.appendChild(item);
+        });
     });
 };
 window.resolverReporte = async (reporteId, sistemaId) => {
